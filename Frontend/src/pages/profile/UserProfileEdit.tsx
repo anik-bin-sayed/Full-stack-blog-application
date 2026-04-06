@@ -1,0 +1,590 @@
+import React, { useState, useEffect, useRef } from "react";
+import {
+  FiSave,
+  FiX,
+  FiUpload,
+  FiMapPin,
+  FiPhone,
+  FiGlobe,
+  FiTwitter,
+  FiGithub,
+  FiLinkedin,
+  FiBriefcase,
+  FiAlertCircle,
+} from "react-icons/fi";
+
+import { useUpdateProfileMutation } from "../../features/profile/profileApi";
+import profile_image from "../../assets/default_profile_image.png";
+import { showSuccessToast } from "../../utils/showSuccessToast";
+import { showErrorToast } from "../../utils/showErrorToast";
+
+interface ProfileFormData {
+  fullname: string;
+  bio: string;
+  city: string;
+  country: string;
+  address: string;
+  phone: string;
+  gender: string;
+  language: string;
+  twitter: string;
+  github: string;
+  linkedin: string;
+  website: string;
+  portfolio_url: string;
+}
+
+interface ProfileEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: any;
+  onSuccess?: () => void;
+}
+
+const initialState = {
+  fullname: "",
+  bio: "",
+  city: "",
+  country: "",
+  address: "",
+  phone: "",
+  gender: "",
+  language: "",
+  twitter: "",
+  github: "",
+  linkedin: "",
+  website: "",
+  portfolio_url: "",
+};
+
+const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  onSuccess,
+}) => {
+  const [error, setError] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const [formData, setFormData] = useState<ProfileFormData>(initialState);
+
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // Cleanup object URLs to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (avatarPreview && avatarPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+      if (coverPreview && coverPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(coverPreview);
+      }
+    };
+  }, [avatarPreview, coverPreview]);
+
+  // Populate form when user data changes
+  useEffect(() => {
+    if (user) {
+      const profile = user.profile || {};
+      setFormData({
+        fullname: profile.fullname || "",
+        bio: profile.bio || "",
+        city: profile.city || "",
+        country: profile.country || "",
+        address: profile.address || "",
+        phone: profile.phone || "",
+        gender: profile.gender || "",
+        language: profile.language || "",
+        twitter: profile.twitter || "",
+        github: profile.github || "",
+        linkedin: profile.linkedin || "",
+        website: profile.website || "",
+        portfolio_url: profile.portfolio_url || "",
+      });
+
+      const profileImage = user.profile_images?.[0]?.image;
+      if (
+        profileImage &&
+        typeof profileImage === "string" &&
+        !profileImage.startsWith("blog:")
+      ) {
+        setAvatarPreview(profileImage);
+      } else {
+        setAvatarPreview(null);
+      }
+
+      const coverImage = user.cover_images?.[0]?.image;
+      if (
+        coverImage &&
+        typeof coverImage === "string" &&
+        !coverImage.startsWith("blob:")
+      ) {
+        setCoverPreview(coverImage);
+      } else {
+        setCoverPreview(null);
+      }
+    }
+
+    setError(null);
+  }, [user]);
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError(null);
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "cover",
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size should be less than 5MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload a valid image file");
+      return;
+    }
+
+    if (type === "avatar" && avatarPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    } else if (type === "cover" && coverPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(coverPreview);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    if (type === "avatar") {
+      setAvatarFile(file);
+      setAvatarPreview(previewUrl);
+    } else {
+      setCoverFile(file);
+      setCoverPreview(previewUrl);
+    }
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const formDataToSend = new FormData();
+
+    // Append all text fields (only if they have value)
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value && value.trim() !== "") {
+        formDataToSend.append(key, value);
+      }
+    });
+
+    if (avatarFile) formDataToSend.append("profile_image", avatarFile);
+    if (coverFile) formDataToSend.append("cover_image", coverFile);
+
+    // Log FormData properly
+    console.log(formData);
+
+    try {
+      const result = await updateProfile(formDataToSend).unwrap();
+      console.log("Update success:", result);
+      showSuccessToast("Profile updated successfully!");
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      onClose();
+    } catch (error: any) {
+      console.error("Update failed:", error);
+      const errorMessage =
+        error?.data?.message || error?.message || "Failed to update profile";
+      showErrorToast(errorMessage);
+      setError(errorMessage);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="update__info__modal fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop with blur effect */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal Panel */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          ref={modalRef}
+          className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scroll-smooth"
+        >
+          {/* Header - Fixed sticky */}
+          <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+              <p className="text-indigo-100 text-sm mt-1">
+                Update your personal information and social links
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Close modal"
+            >
+              <FiX size={24} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+            {/* Cover Image */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cover Photo
+              </label>
+              <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                {coverPreview ? (
+                  <img
+                    src={coverPreview}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                    <FiUpload size={32} className="mb-2 opacity-50" />
+                    <span className="text-sm">No cover image</span>
+                  </div>
+                )}
+                <label className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/80 text-white px-3 py-1.5 rounded-lg cursor-pointer text-sm flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50">
+                  <FiUpload size={16} /> Change
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileChange(e, "cover")}
+                    aria-label="Upload cover image"
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Recommended: 1200x400px, max 5MB
+              </p>
+            </div>
+
+            {/* Avatar */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profile Picture
+              </label>
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="relative">
+                  <img
+                    src={avatarPreview || profile_image}
+                    alt="Avatar preview"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                    onError={(e) => {
+                      // Fallback to default profile image if preview fails
+                      (e.target as HTMLImageElement).src = profile_image;
+                    }}
+                  />
+                  <label className="absolute -bottom-2 -right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-full cursor-pointer shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <FiUpload size={14} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, "avatar")}
+                      aria-label="Upload profile picture"
+                    />
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 text-center sm:text-left">
+                  Recommended: Square image, at least 200x200px, max 5MB
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <FiAlertCircle className="flex-shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
+            {/* Basic Info Grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="fullname"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Full Name *
+                </label>
+                <input
+                  id="fullname"
+                  type="text"
+                  name="fullname"
+                  value={formData.fullname}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Phone
+                </label>
+                <div className="relative">
+                  <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    id="phone"
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                    placeholder="Phone number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Location Fields */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="city"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  City
+                </label>
+                <div className="relative">
+                  <FiMapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    id="city"
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                    placeholder="City"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Country
+                </label>
+                <input
+                  id="country"
+                  type="text"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Country"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Address
+                </label>
+                <input
+                  id="address"
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Street address"
+                />
+              </div>
+            </div>
+
+            {/* Gender & Language */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="gender"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="language"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Languages
+                </label>
+                <input
+                  id="language"
+                  type="text"
+                  name="language"
+                  value={formData.language}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="e.g., English, Bengali, Hindi"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate multiple languages with commas
+                </p>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label
+                htmlFor="bio"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Bio
+              </label>
+              <textarea
+                id="bio"
+                name="bio"
+                rows={14}
+                value={formData.bio}
+                onChange={handleChange}
+                className="w-full h-[400px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
+                placeholder="Tell us about yourself..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.bio.length} characters
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="space-y-4 pt-2 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Social Links
+              </h3>
+              <div className="relative">
+                <FiTwitter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  name="twitter"
+                  value={formData.twitter}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Twitter profile URL"
+                />
+              </div>
+              <div className="relative">
+                <FiGithub className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  name="github"
+                  value={formData.github}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="GitHub profile URL"
+                />
+              </div>
+              <div className="relative">
+                <FiLinkedin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  name="linkedin"
+                  value={formData.linkedin}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="LinkedIn profile URL"
+                />
+              </div>
+              <div className="relative">
+                <FiGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Personal website"
+                />
+              </div>
+              <div className="relative">
+                <FiBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  name="portfolio_url"
+                  value={formData.portfolio_url}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  placeholder="Portfolio URL"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                <FiX size={18} /> Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isUpdating}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                {isUpdating ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FiSave size={18} />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProfileEditModal;
