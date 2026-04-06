@@ -70,8 +70,12 @@ const UserProfile: React.FC = () => {
     "posts",
   );
 
-  const { data: currentProfile } = useProfilePhotoQuery();
-  const { data: currentCover } = useCoverPhotoQuery();
+  const { data: currentProfile } = useProfilePhotoQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: currentCover } = useCoverPhotoQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const {
     data: user,

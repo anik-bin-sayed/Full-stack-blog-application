@@ -186,7 +186,7 @@ const Bloggers: React.FC<BloggersProps> = ({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 flex items-center justify-center">
+      <div className="min-h-screen  flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -219,9 +219,9 @@ const Bloggers: React.FC<BloggersProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
+    <div className="min-h-screen ">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white overflow-hidden">
+      <div className="relative  text-white overflow-hidden">
         {/* Animated background pattern */}
         <div className="absolute inset-0 opacity-10">
           <svg
@@ -252,12 +252,17 @@ const Bloggers: React.FC<BloggersProps> = ({
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
             <FiUsers className="w-4 h-4" />
-            <span className="text-sm font-medium">Community</span>
+            <span className="text-sm font-medium border py-2 px-4 text-black rounded-2xl">
+              Community
+            </span>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl text-black text-medium italic mb-4 tracking-tight">
             All Bloggers
           </h1>
-          <p className="text-lg md:text-xl text-indigo-100 max-w-2xl mx-auto">
+          <p
+            className="text-lg md:text-xl text-black max-w-2xl mx-auto"
+            style={{ fontFamily: "Dancing Script, cursive" }}
+          >
             Meet our amazing community of writers and creators sharing their
             stories with the world
           </p>

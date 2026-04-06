@@ -14,6 +14,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { showSuccessToast } from "../../utils/showSuccessToast";
+import { useAppSelector } from "../../redux/hooks";
 
 interface CoverImageType {
   id: number;
@@ -23,7 +24,11 @@ interface CoverImageType {
 }
 
 const CoverImages = () => {
-  const { data, isLoading, isError, refetch } = useCoverImageGalleryQuery();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { data, isLoading, isError, refetch } = useCoverImageGalleryQuery(
+    undefined,
+    { skip: !isAuthenticated },
+  );
   const [deleteCoverImage, { isLoading: isDeleting }] =
     useDeleteCoverImageMutation();
   const [makeCurrentCoverImage, { isLoading: isSettingMain }] =

@@ -2,10 +2,8 @@ import React, { useEffect } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Register from "../pages/auth/Register";
 import Login from "../pages/auth/Login";
-import Navbar from "../components/Navbar";
 
 import { useAppSelector } from "../redux/hooks";
-import Loader from "../components/Loader";
 import Home from "../pages/Blog/Home";
 import Blogs from "../pages/Blog/Blogs";
 import AuthorProfile from "../pages/Blog/AuthorProfile";
@@ -18,6 +16,8 @@ import {
 import Bloggers from "../pages/Blog/BloggersPage";
 import UserProfileEdit from "../pages/profile/UserProfileEdit";
 import CreateBlogPage from "../pages/Blog/CreateBlogPage";
+import Navbar from "../components/Navbar";
+import Footer from "../components/footer";
 
 const Index = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -56,6 +56,7 @@ const Index = () => {
         </Route>
         <Route path="/create-blog" element={<CreateBlogPage />} />
       </Routes>
+      <Footer />
     </Router>
   );
 };

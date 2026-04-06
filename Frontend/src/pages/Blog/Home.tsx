@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiCalendar, FiUser, FiTag } from "react-icons/fi";
+import Footer from "../../components/footer";
 
 // Sample blog post data (replace with actual data from your backend)
 const featuredPosts = [
@@ -78,7 +79,7 @@ const recentPosts = [
   },
 ];
 
-const categories = [
+export const categories = [
   "Technology",
   "Design",
   "JavaScript",
@@ -91,28 +92,33 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white">
-        <div className="absolute inset-0 bg-black/20" />
+      <section className="relative overflow-hidden  text-white">
+        <div className="absolute inset-0" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 animate-fadeInUp">
-              Welcome to BlogSpace
+            <h1 className="text-4xl md:text-6xl text-black italic font-semibold mb-6 animate-fadeInUp">
+              Welcome to PostVerse
             </h1>
-            <p className="text-lg md:text-xl text-indigo-100 mb-8 animate-fadeInUp animation-delay-200">
+            <p
+              className="text-lg md:text-xl text-black mb-8 animate-fadeInUp animation-delay-200"
+              style={{ fontFamily: "Dancing Script, cursive" }}
+            >
               Discover inspiring stories, expert insights, and the latest trends
               in tech, design, and development.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp animation-delay-400">
               <Link
-                to="/blog"
+                to="/blogs"
                 className="inline-flex items-center justify-center px-6 py-3 bg-white text-indigo-600 rounded-full font-semibold hover:bg-gray-100 transition shadow-lg"
+                style={{ fontFamily: "Dancing Script, cursive" }}
               >
                 Start Reading
                 <FiArrowRight className="ml-2" />
               </Link>
               <Link
                 to="/about"
-                className="inline-flex items-center justify-center px-6 py-3 border-2 border-white rounded-full font-semibold hover:bg-white/10 transition"
+                className="inline-flex items-center justify-center px-6 py-3 border-2 text-black  rounded-full font-medium "
+                style={{ fontFamily: "Dancing Script, cursive" }}
               >
                 Learn More
               </Link>
@@ -301,70 +307,6 @@ const Home: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-white text-xl font-bold mb-4">BlogSpace</h3>
-              <p className="text-sm">
-                Empowering readers with quality content since 2024.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link to="/" className="hover:text-white transition">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/blog" className="hover:text-white transition">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/about" className="hover:text-white transition">
-                    About
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Categories</h4>
-              <ul className="space-y-2 text-sm">
-                {categories.slice(0, 4).map((cat) => (
-                  <li key={cat}>
-                    <Link
-                      to={`/blog?category=${cat.toLowerCase()}`}
-                      className="hover:text-white transition"
-                    >
-                      {cat}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Follow Us</h4>
-              <div className="flex space-x-4">
-                <a href="#" className="hover:text-white transition">
-                  Twitter
-                </a>
-                <a href="#" className="hover:text-white transition">
-                  GitHub
-                </a>
-                <a href="#" className="hover:text-white transition">
-                  LinkedIn
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm">
-            &copy; {new Date().getFullYear()} BlogSpace. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

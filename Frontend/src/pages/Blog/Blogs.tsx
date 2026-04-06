@@ -198,12 +198,15 @@ const Blogs: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white py-16">
+      <div className=" text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+          <h1 className="text-4xl md:text-5xl text-black font-medium italic mb-4">
             All Blogs
           </h1>
-          <p className="text-lg text-indigo-100 max-w-2xl mx-auto">
+          <p
+            className="text-lg text-black max-w-2xl mx-auto"
+            style={{ fontFamily: "Dancing Script, cursive" }}
+          >
             Explore our collection of articles, tutorials, and insights
           </p>
         </div>
