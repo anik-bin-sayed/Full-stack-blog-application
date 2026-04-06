@@ -1,32 +1,21 @@
 import React from "react";
-import Bloggers from "../../components/Bloggers/Bloggers";
 import { useGetUsersQuery } from "../../features/profile/profileApi";
+import Bloggers from "../../components/Bloggers/Bloggers";
 import { useAppSelector } from "../../redux/hooks";
-import Loader from "../../components/Loader";
 
-const BloggersPage: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+const BloggersPage = () => {
+  const { data, isLoading, error } = useGetUsersQuery({ page: 1, search: "" });
 
-  const { data, isLoading } = useGetUsersQuery(
-    { page: 1, search: "" },
-    {
-      skip: !isAuthenticated,
-    },
+  // Assuming your API returns { count, next, previous, results }
+  const bloggersList = data?.results || [];
+
+  return (
+    <Bloggers
+      bloggers={bloggersList}
+      isLoading={isLoading}
+      error={error?.message || null}
+    />
   );
-  console.log(data);
-
-  const defaultData = {
-    count: 0,
-    next: null,
-    previous: null,
-    results: [],
-  };
-
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  return <Bloggers data={data || defaultData} />;
 };
 
 export default BloggersPage;

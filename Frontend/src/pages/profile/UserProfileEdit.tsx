@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   FiSave,
   FiX,
-  FiUpload,
   FiMapPin,
   FiPhone,
   FiGlobe,
@@ -14,7 +13,6 @@ import {
 } from "react-icons/fi";
 
 import { useUpdateProfileMutation } from "../../features/profile/profileApi";
-import profile_image from "../../assets/default_profile_image.png";
 import { showSuccessToast } from "../../utils/showSuccessToast";
 import { showErrorToast } from "../../utils/showErrorToast";
 
@@ -70,23 +68,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-
-  // Cleanup object URLs to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (avatarPreview && avatarPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(avatarPreview);
-      }
-      if (coverPreview && coverPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(coverPreview);
-      }
-    };
-  }, [avatarPreview, coverPreview]);
-
   // Populate form when user data changes
   useEffect(() => {
     if (user) {
@@ -106,28 +87,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         website: profile.website || "",
         portfolio_url: profile.portfolio_url || "",
       });
-
-      const profileImage = user.profile_images?.[0]?.image;
-      if (
-        profileImage &&
-        typeof profileImage === "string" &&
-        !profileImage.startsWith("blog:")
-      ) {
-        setAvatarPreview(profileImage);
-      } else {
-        setAvatarPreview(null);
-      }
-
-      const coverImage = user.cover_images?.[0]?.image;
-      if (
-        coverImage &&
-        typeof coverImage === "string" &&
-        !coverImage.startsWith("blob:")
-      ) {
-        setCoverPreview(coverImage);
-      } else {
-        setCoverPreview(null);
-      }
     }
 
     setError(null);
@@ -143,58 +102,17 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     if (error) setError(null);
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "avatar" | "cover",
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image size should be less than 5MB");
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload a valid image file");
-      return;
-    }
-
-    if (type === "avatar" && avatarPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(avatarPreview);
-    } else if (type === "cover" && coverPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(coverPreview);
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    if (type === "avatar") {
-      setAvatarFile(file);
-      setAvatarPreview(previewUrl);
-    } else {
-      setCoverFile(file);
-      setCoverPreview(previewUrl);
-    }
-    setError(null);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     const formDataToSend = new FormData();
 
-    // Append all text fields (only if they have value)
     Object.entries(formData).forEach(([key, value]) => {
       if (value && value.trim() !== "") {
         formDataToSend.append(key, value);
       }
     });
-
-    if (avatarFile) formDataToSend.append("profile_image", avatarFile);
-    if (coverFile) formDataToSend.append("cover_image", coverFile);
-
-    // Log FormData properly
-    console.log(formData);
 
     try {
       const result = await updateProfile(formDataToSend).unwrap();
@@ -232,16 +150,16 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scroll-smooth"
         >
           {/* Header - Fixed sticky */}
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+          <div className="sticky top-0 z-10 bg-white shadow px-6 py-4 flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-              <p className="text-indigo-100 text-sm mt-1">
+              <h2 className="text-2xl font-bold  text-black">Edit Profile</h2>
+              <p className=" text-sm mt-1 text-black">
                 Update your personal information and social links
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="border cursor-pointer hover:bg-black/10 rounded-lg p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
               aria-label="Close modal"
             >
               <FiX size={24} />
@@ -249,73 +167,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
-            {/* Cover Image */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cover Photo
-              </label>
-              <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-                {coverPreview ? (
-                  <img
-                    src={coverPreview}
-                    alt="Cover preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                    <FiUpload size={32} className="mb-2 opacity-50" />
-                    <span className="text-sm">No cover image</span>
-                  </div>
-                )}
-                <label className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/80 text-white px-3 py-1.5 rounded-lg cursor-pointer text-sm flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50">
-                  <FiUpload size={16} /> Change
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleFileChange(e, "cover")}
-                    aria-label="Upload cover image"
-                  />
-                </label>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Recommended: 1200x400px, max 5MB
-              </p>
-            </div>
-
-            {/* Avatar */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Profile Picture
-              </label>
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="relative">
-                  <img
-                    src={avatarPreview || profile_image}
-                    alt="Avatar preview"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                    onError={(e) => {
-                      // Fallback to default profile image if preview fails
-                      (e.target as HTMLImageElement).src = profile_image;
-                    }}
-                  />
-                  <label className="absolute -bottom-2 -right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-full cursor-pointer shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <FiUpload size={14} />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileChange(e, "avatar")}
-                      aria-label="Upload profile picture"
-                    />
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 text-center sm:text-left">
-                  Recommended: Square image, at least 200x200px, max 5MB
-                </p>
-              </div>
-            </div>
-
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
                 <FiAlertCircle className="flex-shrink-0" />

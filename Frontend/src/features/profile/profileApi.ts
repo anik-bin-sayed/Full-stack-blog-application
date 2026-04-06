@@ -1,6 +1,8 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQueryWithReauth from "../baseQueryWithReauth";
 
+// ================= TYPES =================
+
 // Image
 export interface Image {
   id: number;
@@ -32,7 +34,7 @@ export interface Profile {
   updated_at: string;
 }
 
-// User Full
+// User
 export interface User {
   id: number;
   username: string;
@@ -50,30 +52,34 @@ export interface PaginatedUsers {
   results: User[];
 }
 
-interface Image {
-  image: string;
-}
-
-interface ID {
+// Common ID response
+type IdResponse = {
   id: number;
-}
+};
+
+// ================= API =================
 
 export const profileApi = createApi({
   reducerPath: "profileApi",
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Profile"],
+
   endpoints: (builder) => ({
+    // ================= USERS =================
+
     getUsers: builder.query<PaginatedUsers, { page?: number; search?: string }>(
       {
         query: ({ page = 1, search = "" }) => ({
-          url: `profile?page=${page}&search=${search}`,
+          url: `/profile?page=${page}&search=${search}`,
           method: "GET",
         }),
         providesTags: ["Profile"],
       },
     ),
 
-    getMe: builder.query<PaginatedUsers, { page?: number; search?: string }>({
+    // CURRENT USER
+
+    getMe: builder.query<User, void>({
       query: () => ({
         url: `/profile/me`,
         method: "GET",
@@ -81,7 +87,15 @@ export const profileApi = createApi({
       providesTags: ["Profile"],
     }),
 
-    updateProfile: builder.mutation<any, FormData>({
+    getUserProfile: builder.query<User, number>({
+      query: (id) => ({
+        url: `/profile/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Profile"],
+    }),
+
+    updateProfile: builder.mutation<User, FormData>({
       query: (data) => ({
         url: `/profile/update`,
         method: "PATCH",
@@ -90,22 +104,14 @@ export const profileApi = createApi({
       invalidatesTags: ["Profile"],
     }),
 
-    // profile
+    // ================= PROFILE IMAGE =================
+
     profilePhoto: builder.query<Image, void>({
       query: () => ({
         url: `/profile/current-photo`,
         method: "GET",
       }),
       providesTags: ["Profile"],
-    }),
-
-    uploadProfileImage: builder.mutation<Image, FormData>({
-      query: (formdata) => ({
-        url: `profile/upload-img`,
-        method: "POST",
-        body: formdata,
-      }),
-      invalidatesTags: ["Profile"],
     }),
 
     profileImageGallery: builder.query<Image[], void>({
@@ -116,23 +122,33 @@ export const profileApi = createApi({
       providesTags: ["Profile"],
     }),
 
-    deleteProfileImage: builder.mutation<ID, number>({
+    uploadProfileImage: builder.mutation<Image, FormData>({
+      query: (formdata) => ({
+        url: `/profile/upload-img`,
+        method: "POST",
+        body: formdata,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    deleteProfileImage: builder.mutation<IdResponse, number>({
       query: (id) => ({
-        url: `profile/delete/${id}`,
+        url: `/profile/delete/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Profile"],
     }),
 
-    makeCurrentProfileImage: builder.mutation<ID, number>({
+    makeCurrentProfileImage: builder.mutation<IdResponse, number>({
       query: (id) => ({
-        url: `profile/make-profile-photo/${id}`,
+        url: `/profile/make-profile-photo/${id}`,
         method: "PUT",
       }),
       invalidatesTags: ["Profile"],
     }),
 
-    //cover photo
+    // COVER IMAGE
+
     coverPhoto: builder.query<Image, void>({
       query: () => ({
         url: `/profile/current-cover-photo`,
@@ -149,27 +165,27 @@ export const profileApi = createApi({
       providesTags: ["Profile"],
     }),
 
-    deleteCoverImage: builder.mutation<ID, number>({
+    uploadCoverImage: builder.mutation<Image, FormData>({
+      query: (formdata) => ({
+        url: `/profile/upload-cover-img`,
+        method: "POST",
+        body: formdata,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    deleteCoverImage: builder.mutation<IdResponse, number>({
       query: (id) => ({
-        url: `profile/delete-cover-image/${id}`,
+        url: `/profile/delete-cover-image/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Profile"],
     }),
 
-    makeCurrentCoverImage: builder.mutation<ID, number>({
+    makeCurrentCoverImage: builder.mutation<IdResponse, number>({
       query: (id) => ({
-        url: `profile/make-cover-photo/${id}`,
+        url: `/profile/make-cover-photo/${id}`,
         method: "PUT",
-      }),
-      invalidatesTags: ["Profile"],
-    }),
-
-    uploadCoverImage: builder.mutation<Image, FormData>({
-      query: (formdata) => ({
-        url: `profile/upload-cover-img`,
-        method: "POST",
-        body: formdata,
       }),
       invalidatesTags: ["Profile"],
     }),
@@ -178,18 +194,19 @@ export const profileApi = createApi({
 
 export const {
   useGetUsersQuery,
+  useGetUserProfileQuery,
   useGetMeQuery,
   useUpdateProfileMutation,
+
   useProfilePhotoQuery,
-  useCoverPhotoQuery,
   useProfileImageGalleryQuery,
-  useCoverImageGalleryQuery,
   useUploadProfileImageMutation,
-  useUploadCoverImageMutation,
-
-  useDeleteCoverImageMutation,
   useDeleteProfileImageMutation,
-
-  useMakeCurrentCoverImageMutation,
   useMakeCurrentProfileImageMutation,
+
+  useCoverPhotoQuery,
+  useCoverImageGalleryQuery,
+  useUploadCoverImageMutation,
+  useDeleteCoverImageMutation,
+  useMakeCurrentCoverImageMutation,
 } = profileApi;

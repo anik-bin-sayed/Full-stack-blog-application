@@ -31,10 +31,7 @@ class AllUsersView(APIView):
         users = (
             User.objects.all()
             .select_related("profile")
-            .prefetch_related(
-                "followers",
-                "following",
-            )
+            .prefetch_related("followers", "following", "profileimage_set")
         )
 
         search = request.query_params.get("search")
@@ -54,9 +51,7 @@ class PartialUser(APIView):
         users = (
             User.objects.filter(id=id)
             .select_related("profile")
-            .prefetch_related(
-                "profileimage_set",
-            )
+            .prefetch_related("profileimage_set", "coverimage_set")
         )
         serializer = UserDetailSerializer(users, many=True)
 

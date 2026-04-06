@@ -13,11 +13,11 @@ import {
   startTokenRefreshTimer,
   isAuthCookieValid,
 } from "../features/auth/authPersist";
-import Bloggers from "../pages/Blog/BloggersPage";
 import UserProfileEdit from "../pages/profile/UserProfileEdit";
 import CreateBlogPage from "../pages/Blog/CreateBlogPage";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
+import BloggersPage from "../pages/Blog/BloggersPage";
 
 const Index = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -49,8 +49,8 @@ const Index = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
         <Route path="/blogs" element={<Blogs />} />
-        <Route path="/bloggers" element={<Bloggers />} />
-        <Route path="/author/:id" element={<AuthorProfile />} />
+        <Route path="/bloggers" element={<BloggersPage />} />
+        <Route path="/bloggers/:id" element={<AuthorProfile />} />
         <Route path="/profile" element={<UserProfile />}>
           <Route path="edit" element={<UserProfileEdit />} />
         </Route>
