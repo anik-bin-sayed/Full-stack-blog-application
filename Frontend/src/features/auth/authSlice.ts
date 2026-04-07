@@ -32,10 +32,14 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUserData: (state, action: PayloadAction<User>) => {
+      state.isLoading = true;
       state.user = action.payload;
-      state.isAuthenticated = true;
       state.isLoading = false;
       state.error = null;
+    },
+
+    setAuth: (state) => {
+      state.isAuthenticated = true;
     },
 
     logout: (state) => {
@@ -43,16 +47,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
     },
-
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
   },
 });
 
-export const { setUserData, logout, setLoading, setError } = authSlice.actions;
+export const { setUserData, logout, setAuth } = authSlice.actions;
 export default authSlice.reducer;

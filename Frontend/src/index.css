@@ -23,15 +23,15 @@
   animation-delay: 0.4s;
 }
 
-.update__info__modal::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 1px;
   display: none;
 }
 
-.update__info__modal::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: #888;
 }
 
-.update__info__modal::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: #555;
 }

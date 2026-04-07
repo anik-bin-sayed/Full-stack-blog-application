@@ -6,7 +6,7 @@ interface LoaderProps {
 
 const Loader = memo(({ message = "Loading..." }: LoaderProps) => {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white backdrop-blur-sm">
       {/* Spinner */}
       <div className="relative w-16 h-16">
         <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>

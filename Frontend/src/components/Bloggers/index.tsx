@@ -6,14 +6,13 @@ import {
   FiMail,
   FiMapPin,
   FiUsers,
-  FiPhone,
   FiBookOpen,
   FiCalendar,
-  FiGlobe,
   FiUserPlus,
 } from "react-icons/fi";
 import { RxCross1 } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
+import SkeletonCard from "./SkeletonCard";
 
 interface Profile {
   fullname: string;
@@ -32,9 +31,20 @@ interface ProfileImage {
   uploaded_at: string;
 }
 
-interface Follower {
+type UserBasic = {
   id: number;
-}
+  username: string;
+  email: string;
+};
+
+type Follower = {
+  id: number;
+  created_at: string;
+  follower: UserBasic;
+  following: UserBasic;
+};
+
+type Followers = Follower[];
 
 interface Blogger {
   id: number;
@@ -42,7 +52,7 @@ interface Blogger {
   email: string;
   profile: Profile | null;
   profile_images: ProfileImage[];
-  followers: Follower[];
+  followers: Followers;
 }
 
 interface BloggersProps {
@@ -50,22 +60,6 @@ interface BloggersProps {
   isLoading?: boolean;
   error?: string | null;
 }
-
-const SkeletonCard: React.FC = () => (
-  <div className="bg-white rounded-2xl shadow-md overflow-hidden animate-pulse">
-    <div className="h-48 bg-gradient-to-r from-gray-200 to-gray-100" />
-    <div className="p-5 space-y-3">
-      <div className="h-5 bg-gray-200 rounded w-3/4" />
-      <div className="h-4 bg-gray-200 rounded w-1/2" />
-      <div className="space-y-2 pt-2">
-        <div className="h-4 bg-gray-200 rounded w-full" />
-        <div className="h-4 bg-gray-200 rounded w-5/6" />
-        <div className="h-4 bg-gray-200 rounded w-4/6" />
-      </div>
-      <div className="h-8 bg-gray-200 rounded w-1/3 mt-3" />
-    </div>
-  </div>
-);
 
 const Bloggers: React.FC<BloggersProps> = ({
   bloggers = [],
@@ -119,10 +113,8 @@ const Bloggers: React.FC<BloggersProps> = ({
     setImageErrors((prev) => ({ ...prev, [id]: true }));
   };
 
-  // Clear search
   const clearSearch = () => setSearchTerm("");
 
-  // Loading state with skeletons
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -139,7 +131,6 @@ const Bloggers: React.FC<BloggersProps> = ({
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -162,7 +153,6 @@ const Bloggers: React.FC<BloggersProps> = ({
     );
   }
 
-  // Empty state
   const showEmptyState = filteredBloggers.length === 0;
   const totalBloggers = bloggers.length;
   const showingCount = filteredBloggers.length;
@@ -172,10 +162,13 @@ const Bloggers: React.FC<BloggersProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* HEADER */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
+          <h1 className="text-4xl bg-clip-text text-black italic font-medium mb-3">
             Bloggers Hub
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p
+            className="text-lg text-black max-w-2xl mx-auto"
+            style={{ fontFamily: "Dancing Script, cursive" }}
+          >
             Discover amazing bloggers and connect with like-minded creators from
             around the world
           </p>
@@ -186,7 +179,6 @@ const Bloggers: React.FC<BloggersProps> = ({
           )}
         </div>
 
-        {/* SEARCH BAR */}
         <div className="mb-12 max-w-xl mx-auto relative">
           <div className="relative group">
             <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
@@ -269,7 +261,7 @@ const Bloggers: React.FC<BloggersProps> = ({
                               </div>
                             </div>
                           )}
-                          {/* Follower Badge */}
+
                           <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-1 text-xs text-white flex items-center gap-1">
                             <FiUsers size={12} />
                             <span>
@@ -290,7 +282,6 @@ const Bloggers: React.FC<BloggersProps> = ({
                             </p>
                           </div>
 
-                          {/* DETAILS GRID */}
                           <div className="space-y-2 text-sm text-gray-600 mb-3">
                             <div className="flex items-center gap-2 truncate">
                               <FiMail

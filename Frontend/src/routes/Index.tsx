@@ -1,61 +1,85 @@
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Register from "../pages/auth/Register";
-import Login from "../pages/auth/Login";
-
 import { useAppSelector } from "../redux/hooks";
-import Home from "../pages/Blog/Home";
-import Blogs from "../pages/Blog/Blogs";
-import AuthorProfile from "../pages/Blog/AuthorProfile";
-import UserProfile from "../pages/profile/UserProfile";
 import { useRefreshTokenMutation } from "../features/auth/authApi";
 import {
-  startTokenRefreshTimer,
   isAuthCookieValid,
+  startTokenRefreshTimer,
+  stopTokenRefreshTimer,
 } from "../features/auth/authPersist";
-import UserProfileEdit from "../pages/profile/UserProfileEdit";
-import CreateBlogPage from "../pages/Blog/CreateBlogPage";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
-import BloggersPage from "../pages/Blog/BloggersPage";
+import Loader from "../components/Loader";
+import { useGetMeQuery } from "../features/profile/profileApi";
+import { setUserData } from "../features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
+
+// Lazy load all page components
+const Register = lazy(() => import("../pages/auth/Register"));
+const Login = lazy(() => import("../pages/auth/Login"));
+const Home = lazy(() => import("../pages/Blog/Home"));
+const Blogs = lazy(() => import("../pages/Blog/Blogs"));
+const AuthorProfile = lazy(() => import("../pages/Blog/AuthorProfile"));
+const UserProfile = lazy(() => import("../pages/profile/UserProfile"));
+const UserProfileEdit = lazy(() => import("../pages/profile/UserProfileEdit"));
+const CreateBlogPage = lazy(() => import("../pages/Blog/CreateBlogPage"));
+const BloggersPage = lazy(() => import("../pages/Blog/BloggersPage"));
 
 const Index = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const [refreshToken] = useRefreshTokenMutation();
+  const { data, isLoading } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
+  const [refreshToken] = useRefreshTokenMutation();
+  const dispatch = useDispatch();
   useEffect(() => {
     const shouldRefresh = isAuthCookieValid();
     if (shouldRefresh && !isAuthenticated) {
       refreshToken(undefined).catch(() => {});
     }
-  }, [refreshToken]);
+  }, [refreshToken, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      const store = (window as any).__REDUX_STORE__;
-      if (store) {
-        startTokenRefreshTimer(() => refreshToken(undefined), store.getState);
-      }
+      startTokenRefreshTimer(
+        () => refreshToken(),
+        () => ({ auth: { isAuthenticated } }),
+      );
+    } else {
+      stopTokenRefreshTimer();
     }
+
+    return () => stopTokenRefreshTimer();
   }, [isAuthenticated, refreshToken]);
 
-  // if (isLoading) return <Loader />;
-
+  useEffect(() => {
+    dispatch(setUserData(data));
+  }, [dispatch, data]);
   return (
     <Router>
       <Navbar />
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/blogs" element={<Blogs />} />
-        <Route path="/bloggers" element={<BloggersPage />} />
-        <Route path="/bloggers/:id" element={<AuthorProfile />} />
-        <Route path="/profile" element={<UserProfile />}>
-          <Route path="edit" element={<UserProfileEdit />} />
-        </Route>
-        <Route path="/create-blog" element={<CreateBlogPage />} />
-      </Routes>
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/bloggers" element={<BloggersPage />} />
+          <Route path="/bloggers/:id" element={<AuthorProfile />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<UserProfile />}>
+              <Route path="edit" element={<UserProfileEdit />} />
+            </Route>
+
+            <Route path="/create-blog" element={<CreateBlogPage />} />
+          </Route>
+        </Routes>
+      </Suspense>
       <Footer />
     </Router>
   );

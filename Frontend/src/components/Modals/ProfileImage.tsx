@@ -1,5 +1,6 @@
 import React, { useState, memo } from "react";
 import { useUploadProfileImageMutation } from "../../features/profile/profileApi";
+import { showSuccessToast } from "../../utils/showSuccessToast";
 
 interface ProfileImageProps {
   isOpen: boolean;
@@ -29,8 +30,8 @@ const ProfileImage = ({ isOpen, onClose }: ProfileImageProps) => {
     formData.append("image", selectedImage);
 
     try {
-      const result = await uploadProfileImage(formData).unwrap();
-      console.log("Upload success:", result);
+      const res = await uploadProfileImage(formData).unwrap();
+      showSuccessToast(res);
 
       setSelectedImage(null);
       setPreview(null);

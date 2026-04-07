@@ -146,23 +146,6 @@ const Register: React.FC = () => {
     return Object.values(newErrors).every((err) => err === "");
   };
 
-  const resetForm = () => {
-    setFormData({
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-  };
-  const resetError = () => {
-    setErrors({
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateAll()) {
@@ -171,16 +154,14 @@ const Register: React.FC = () => {
         const res = await registerUser(registerPayload).unwrap();
         showSuccessToast(res);
 
-        // Reset form after successful registration
-        resetForm();
-        resetError();
+        setFormData(initialState);
+        setErrors(initialState);
         setPasswordStrength("Weak");
         setStrengthScore(0);
 
-        // Navigate to login page after 1.5 seconds
         setTimeout(() => {
           navigate("/login");
-        }, 1500);
+        }, 1000);
       } catch (error) {
         showErrorToast(error);
       }

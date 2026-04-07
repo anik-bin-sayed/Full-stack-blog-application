@@ -1,7 +1,6 @@
 import React from "react";
 import { useGetUsersQuery } from "../../features/profile/profileApi";
-import Bloggers from "../../components/Bloggers/Bloggers";
-import { useAppSelector } from "../../redux/hooks";
+import Bloggers from "../../components/Bloggers";
 
 const BloggersPage = () => {
   const { data, isLoading, error } = useGetUsersQuery({ page: 1, search: "" });
@@ -13,7 +12,7 @@ const BloggersPage = () => {
     <Bloggers
       bloggers={bloggersList}
       isLoading={isLoading}
-      error={error?.message || null}
+      error={error || null}
     />
   );
 };

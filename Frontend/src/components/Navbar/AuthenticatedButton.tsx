@@ -1,28 +1,31 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FiLogOut, FiUser, FiUserCheck } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import {
-  useGetMeQuery,
-  useProfilePhotoQuery,
-} from "../../features/profile/profileApi";
+import { useProfilePhotoQuery } from "../../features/profile/profileApi";
 import { useAppSelector } from "../../redux/hooks";
 import { useLogoutUserMutation } from "../../features/auth/authApi";
 import default_profile_Image from "../../assets/default_profile_image.png";
 import { showSuccessToast } from "../../utils/showSuccessToast";
+import { logout } from "../../features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import Loader from "../Loader";
 
 const AuthenticatedButton = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user, isLoading } = useAppSelector(
+    (state) => state.auth,
+  );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: currentProfile } = useProfilePhotoQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const { data } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  const dispatch = useDispatch();
+
   const [logoutUser] = useLogoutUserMutation();
 
-  const fullname = data?.profile?.fullname;
-  const email = data?.email;
+  const fullname = user?.profile?.fullname;
+  const email = user?.email;
   const avatarUrl = currentProfile?.image || default_profile_Image;
 
   // Close dropdown when clicking outside
@@ -43,6 +46,7 @@ const AuthenticatedButton = () => {
     if (window.confirm("Are you sure you want to logging out?")) {
       try {
         const res = await logoutUser().unwrap();
+        dispatch(logout());
         showSuccessToast(res);
       } catch (error) {
         console.error("Logout failed:", error);
@@ -50,6 +54,7 @@ const AuthenticatedButton = () => {
     }
   };
 
+  if (isLoading) return <Loader />;
   return (
     <div ref={dropdownRef} className="relative">
       <button

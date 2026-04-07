@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAppSelector } from "../../redux/hooks";
 import { HiMenu, HiX } from "react-icons/hi";
 
@@ -9,15 +9,15 @@ import AuthenticatedButton from "./AuthenticatedButton";
 import { useGetMeQuery } from "../../features/profile/profileApi";
 import { navLinks } from "./navbarUtils";
 import Responsive from "./Responsive";
+import Loader from "../Loader";
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
   const { data: user } = useGetMeQuery(undefined, { skip: !isAuthenticated });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -31,7 +31,6 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) setIsMenuOpen(false);
@@ -40,7 +39,6 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -72,6 +70,7 @@ const Navbar: React.FC = () => {
     return "User";
   };
 
+  if (isLoading) return <Loader />;
   return (
     <>
       <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
@@ -79,7 +78,6 @@ const Navbar: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <Logo />
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <NavLink
@@ -98,12 +96,14 @@ const Navbar: React.FC = () => {
               ))}
             </div>
 
-            {/* Desktop User Section */}
             <div className="hidden md:flex items-center space-x-4">
-              {!user ? <NotAuthenticatedButton /> : <AuthenticatedButton />}
+              {!isAuthenticated ? (
+                <NotAuthenticatedButton />
+              ) : (
+                <AuthenticatedButton />
+              )}
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 rounded-md text-gray-600 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none"
@@ -115,7 +115,6 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Responsive Menu - rendered once */}
       <Responsive
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}

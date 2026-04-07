@@ -1,16 +1,18 @@
 import Cookies from "js-cookie";
-import type { RootState } from "../../app/store";
 
-// Constants
-const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes (token expires in 15)
-const AUTH_COOKIE_NAME = "__auth";
+import type { RootState } from "../../app/store";
+import { AUTH_COOKIE_NAME, TOKEN_REFRESH_INTERVAL } from "../../config";
+
+// Types
+type RefreshTokenFn = () => Promise<unknown>;
+type GetStateFn = () => RootState;
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 export const startTokenRefreshTimer = (
-  refreshTokenFn: () => Promise<any>,
-  getState: () => RootState,
-) => {
+  refreshTokenFn: RefreshTokenFn,
+  getState: GetStateFn,
+): void => {
   if (refreshTimer) {
     clearInterval(refreshTimer);
   }
@@ -29,35 +31,13 @@ export const startTokenRefreshTimer = (
   }, TOKEN_REFRESH_INTERVAL);
 };
 
-export const stopTokenRefreshTimer = () => {
+export const stopTokenRefreshTimer = (): void => {
   if (refreshTimer) {
     clearInterval(refreshTimer);
     refreshTimer = null;
   }
 };
 
-export const setAuthMarker = () => {
-  try {
-    Cookies.set(AUTH_COOKIE_NAME, "true", {
-      expires: 30,
-      secure: true,
-      sameSite: "Lax",
-    });
-  } catch (error) {
-    // Silently handle cookie error
-  }
-};
-
-export const clearAuthState = () => {
-  try {
-    stopTokenRefreshTimer();
-    Cookies.remove(AUTH_COOKIE_NAME);
-    localStorage.removeItem("access_token");
-  } catch (error) {
-    // Silently handle cleanup error
-  }
-};
-
-export const isAuthCookieValid = () => {
+export const isAuthCookieValid = (): boolean => {
   return !!Cookies.get(AUTH_COOKIE_NAME);
 };

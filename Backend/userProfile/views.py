@@ -30,6 +30,8 @@ class AllUsersView(APIView):
     def get(self, request):
         users = (
             User.objects.all()
+            .filter(is_superuser=False)
+            .exclude(id=request.user.id)
             .select_related("profile")
             .prefetch_related("followers", "following", "profileimage_set")
         )

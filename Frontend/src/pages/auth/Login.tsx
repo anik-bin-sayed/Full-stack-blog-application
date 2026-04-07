@@ -7,10 +7,8 @@ import type { LoginErrors, LoginFormData } from "../../types/InputPropsType";
 import { showErrorToast } from "../../utils/showErrorToast";
 import { useLoginUserMutation } from "../../features/auth/authApi";
 import { showSuccessToast } from "../../utils/showSuccessToast";
-import {
-  setAuthMarker,
-  startTokenRefreshTimer,
-} from "../../features/auth/authPersist";
+import { useDispatch } from "react-redux";
+import { setAuth } from "../../features/auth/authSlice";
 
 const initialState = {
   identifier: "",
@@ -18,9 +16,10 @@ const initialState = {
 };
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginFormData>(initialState);
   const [errors, setErrors] = useState<LoginErrors>(initialState);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // query
   const [loginUser, { isLoading }] = useLoginUserMutation();
@@ -81,23 +80,10 @@ const Login: React.FC = () => {
 
         const res = await loginUser(loginPayload).unwrap();
         showSuccessToast(res);
-
-        // Set auth marker for persistence
-        setAuthMarker();
-
-        // Start token refresh timer
-        const store = (window as any).__REDUX_STORE__;
-        if (store) {
-          startTokenRefreshTimer(async () => {
-            // Refresh token implementation will be called
-          }, store.getState);
-        }
-
-        // Reset form after successful login
+        dispatch(setAuth());
         setFormData(initialState);
         setErrors(initialState);
 
-        // Navigate to home page
         setTimeout(() => {
           navigate("/");
         }, 1000);
@@ -152,7 +138,6 @@ const Login: React.FC = () => {
             />
           </div>
 
-          {/* Forgot Password Link */}
           <div className="text-right mb-6">
             <a
               href="#"
@@ -162,14 +147,12 @@ const Login: React.FC = () => {
             </a>
           </div>
 
-          {/* Submit Button */}
           <SubmitButton
             isLoading={isLoading}
             loadingText="Logging in..."
             text="Log In"
           />
 
-          {/* Register Link */}
           <p className="text-center text-gray-600 mt-6">
             Don't have an account?{" "}
             <Link
