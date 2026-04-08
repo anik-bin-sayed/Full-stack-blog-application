@@ -127,7 +127,7 @@ class MyBlogsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        blogs = Blog.objects.filter(author=request.user)
+        blogs = Blog.objects.filter(author=request.user, is_publish=True)
 
         search = request.query_params.get("search")
         if search:
