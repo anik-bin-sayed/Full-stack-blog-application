@@ -38,11 +38,37 @@ export const blogDataApi = createApi({
       providesTags: ["blog"],
     }),
 
+    createCategory: builder.mutation<any, FormData>({
+      query: (body) => ({
+        url: "/blog/category/create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["blog"],
+    }),
+
+    createBlog: builder.mutation<any, FormData>({
+      query: (body) => ({
+        url: "/blog/create-blog",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["blog"],
+    }),
+
     draftCategories: builder.query<any, void>({
       query: (params) => ({
         url: "blog/my-draft-blogs-category",
         method: "GET",
         params,
+      }),
+      providesTags: ["blog"],
+    }),
+
+    blogDetails: builder.query<any, { id: number }>({
+      query: ({ id }) => ({
+        url: `blog/blog-details/${id}`,
+        method: "GET",
       }),
       providesTags: ["blog"],
     }),
@@ -82,4 +108,7 @@ export const {
   usePublishBlogMutation,
   useMyPublicBlogQuery,
   usePublicCategoriesQuery,
+  useCreateCategoryMutation,
+  useCreateBlogMutation,
+  useBlogDetailsQuery,
 } = blogDataApi;

@@ -13,7 +13,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { MdOutlineWatchLater } from "react-icons/md";
 import Skeleton from "../Skeleton";
 import Pagination from "../Pagination";
-import { formatDate, getImageUrl } from "../helper";
+import { formatDate, getImageUrl } from "../../../helper";
 import ErrorState from "../ErrorState";
 import { IoSearch } from "react-icons/io5";
 import { TbCategoryPlus } from "react-icons/tb";
@@ -307,12 +307,12 @@ const MyPublishBlog = () => {
                   >
                     {publishingId === blog.id ? (
                       <span className="flex items-center justify-center gap-1">
-                        Publishing
+                        Moving to draft
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
                         <LuCircleMinus />
-                        Unpublish
+                        Move to Draft
                       </span>
                     )}
                   </button>
@@ -339,9 +339,6 @@ const MyPublishBlog = () => {
                     </button>
 
                     <button
-                      onClick={() => {
-                        /* handle edit */
-                      }}
                       className="inline-flex item-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 
                       bg-blue-50 text-blue-700 hover:bg-blue-100 
                       focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 border w-full cursor-pointer"

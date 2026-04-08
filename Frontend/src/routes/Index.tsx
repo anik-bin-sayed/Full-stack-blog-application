@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import MyBlog from "../pages/my-blog/MyBlog";
+import BlogDetails from "../pages/Blog/BlogDetails";
 
 // Lazy load all page components
 const Register = lazy(() => import("../pages/auth/Register"));
@@ -72,6 +73,7 @@ const Index = () => {
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/bloggers" element={<BloggersPage />} />
           <Route path="/bloggers/:id" element={<AuthorProfile />} />
+          <Route path="/blog/details/:id" element={<BlogDetails />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<UserProfile />}>
               <Route path="edit" element={<UserProfileEdit />} />

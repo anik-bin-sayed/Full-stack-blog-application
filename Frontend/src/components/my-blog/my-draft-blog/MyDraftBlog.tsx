@@ -11,7 +11,7 @@ import Pagination from "../Pagination";
 import Skeleton from "../Skeleton";
 import ErrorState from "../ErrorState";
 import EmptyState from "../EmptyState";
-import { formatDate, getImageUrl } from "../helper";
+import { formatDate, getImageUrl } from "../../../helper";
 import { MdOutlineWatchLater } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CiCirclePlus } from "react-icons/ci";
@@ -309,15 +309,13 @@ const MyDraftBlog = () => {
                   </span>
                 </div>
 
-                <div className="flex gap-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3">
                   <button
                     onClick={(e) => handlePublish(e, blog.id)}
                     disabled={publishingId === blog.id}
-                    className={`flex-1 items-center py-2 text-sm font-medium rounded-xl transition-all ${
-                      publishingId === blog.id
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm hover:shadow-md hover:scale-[1.02]"
-                    }`}
+                    className="inline-flex item-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 
+                    bg-green-50 text-green-700 hover:bg-green-100 
+                    focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-1 border w-full cursor-pointer"
                   >
                     {publishingId === blog.id ? (
                       <span className="flex items-center justify-center gap-1">
@@ -330,26 +328,34 @@ const MyDraftBlog = () => {
                       </span>
                     )}
                   </button>
-                  <button
-                    onClick={(e) => handleDelete(e, blog.id)}
-                    disabled={deletingId === blog.id}
-                    className={`py-2 px-4 text-sm font-medium rounded-xl transition-all ${
-                      deletingId === blog.id
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "text-red-600 bg-red-50 hover:bg-red-100"
-                    }`}
-                  >
-                    {deleting === blog.id ? (
-                      <span className="flex items-center gap-1">
-                        Deleting...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <AiOutlineDelete />
-                        Delete
-                      </span>
-                    )}
-                  </button>
+                  <div className="w-full flex items-center justify-between gap-4">
+                    <button
+                      onClick={(e) => handleDelete(e, blog.id)}
+                      disabled={deletingId === blog.id}
+                      className="inline-flex item-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 
+                      bg-red-50 text-red-700 hover:bg-green-100 
+                      focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 border w-full cursor-pointer"
+                    >
+                      {deleting === blog.id ? (
+                        <span className="flex items-center gap-1">
+                          Deleting...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          <AiOutlineDelete />
+                          Delete
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      className="inline-flex item-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 
+                      bg-blue-50 text-blue-700 hover:bg-blue-100 
+                      focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 border w-full cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
