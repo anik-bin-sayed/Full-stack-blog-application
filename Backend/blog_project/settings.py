@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # locals app
     "accounts",
     "userProfile",
+    "Blogs",
     # "Blogs",
     # third-party
     "rest_framework",
