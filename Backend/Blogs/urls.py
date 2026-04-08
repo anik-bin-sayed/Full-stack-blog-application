@@ -12,10 +12,16 @@ urlpatterns = [
     # my Blog
     path("/my-blog", MyBlogsView.as_view(), name="my-blog"),
     path("/my-draft-blog", MyDraftBlog.as_view(), name="my-draft-blog"),
+    path("/my-public-blog", MyBlogsView.as_view(), name="my-public-blog"),
     path(
         "/my-draft-blogs-category",
         DraftCategoriesView.as_view(),
         name="my-draft-blogs-category",
+    ),
+    path(
+        "/my-public-blogs-category",
+        PublicCategoriesView.as_view(),
+        name="my-public-blogs-category",
     ),
     path("/delete-blog/<int:id>", DeleteBlogView.as_view(), name="delete-blog"),
     path(

@@ -255,3 +255,16 @@ class DraftCategoriesView(APIView):
         )
 
         return Response({"categories": list(categories)})
+
+
+class PublicCategoriesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        categories = (
+            Blog.objects.filter(author=request.user, is_publish=True)
+            .values("category__id", "category__name")
+            .distinct()
+        )
+
+        return Response({"categories": list(categories)})
