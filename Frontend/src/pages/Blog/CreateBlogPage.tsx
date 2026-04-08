@@ -25,7 +25,6 @@ const CreateBlogPage: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle text input
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -34,19 +33,16 @@ const CreateBlogPage: React.FC = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Handle image select
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImageFile(file);
 
-    // Create preview URL
     const imageUrl = URL.createObjectURL(file);
     setPreview(imageUrl);
   };
 
-  // Remove selected image
   const handleRemoveImage = () => {
     if (preview) {
       URL.revokeObjectURL(preview);
@@ -58,7 +54,6 @@ const CreateBlogPage: React.FC = () => {
     }
   };
 
-  // Create category
   const handleCreateCategory = () => {
     if (!newCategory.trim()) return;
 
@@ -67,7 +62,6 @@ const CreateBlogPage: React.FC = () => {
     setShowCategoryModal(false);
   };
 
-  // Submit blog
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,31 +74,25 @@ const CreateBlogPage: React.FC = () => {
     if (imageFile) {
       formData.append("image", imageFile);
     }
-
-    console.log("Sending:", formData);
-    // API example: await createBlog(formData)
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl italic text-black bg-clip-text ">
             Create New Blog
           </h1>
           <p
             className="text-gray-600 mt-2"
-            style={{ fontFamily: "Pacifico, cursive" }}
+            style={{ fontFamily: "Dancing Script, cursive" }}
           >
             Share your story with the world
           </p>
         </div>
 
-        {/* Main Form Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Title Input */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Blog Title
@@ -120,7 +108,6 @@ const CreateBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Excerpt Input */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Short Excerpt

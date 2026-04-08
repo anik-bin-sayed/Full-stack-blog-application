@@ -1,8 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQueryWithReauth from "../baseQueryWithReauth";
 
-// ================= TYPES =================
-
 // Image
 export interface Image {
   id: number;
@@ -65,8 +63,6 @@ export const profileApi = createApi({
   tagTypes: ["Profile"],
 
   endpoints: (builder) => ({
-    // ================= USERS =================
-
     getUsers: builder.query<PaginatedUsers, { page?: number; search?: string }>(
       {
         query: ({ page = 1, search = "" }) => ({
@@ -76,8 +72,6 @@ export const profileApi = createApi({
         providesTags: ["Profile"],
       },
     ),
-
-    // CURRENT USER
 
     getMe: builder.query<User, void>({
       query: () => ({

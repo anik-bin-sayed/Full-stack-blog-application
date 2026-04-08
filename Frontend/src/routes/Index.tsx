@@ -15,6 +15,7 @@ import { setUserData } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import MyBlog from "../pages/my-blog/MyBlog";
 
 // Lazy load all page components
 const Register = lazy(() => import("../pages/auth/Register"));
@@ -75,8 +76,8 @@ const Index = () => {
             <Route path="/profile" element={<UserProfile />}>
               <Route path="edit" element={<UserProfileEdit />} />
             </Route>
-
-            <Route path="/create-blog" element={<CreateBlogPage />} />
+            <Route path="/blogs/create" element={<CreateBlogPage />} />
+            <Route path="/my-blogs" element={<MyBlog />} />
           </Route>
         </Routes>
       </Suspense>

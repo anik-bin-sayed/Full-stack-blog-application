@@ -1,0 +1,374 @@
+import React, { useState, useEffect } from "react";
+import {
+  useDeleteBlogMutation,
+  useDraftCategoriesQuery,
+  useMyDraftBlogApiQuery,
+  usePublishBlogMutation,
+} from "../../../features/blogs/blogApi";
+import { Link } from "react-router-dom";
+import { showSuccessToast } from "../../../utils/showSuccessToast";
+import Pagination from "../Pagination";
+import Skeleton from "../Skeleton";
+import ErrorState from "../ErrorState";
+import EmptyState from "../EmptyState";
+import { formatDate, getImageUrl } from "../helper";
+import { MdOutlineWatchLater } from "react-icons/md";
+import { AiOutlineDelete } from "react-icons/ai";
+import { CiCirclePlus } from "react-icons/ci";
+
+const MyDraftBlog = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<
+    number | undefined
+  >();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 12;
+
+  const [publishingId, setPublishingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data: categoriesData } = useDraftCategoriesQuery();
+  const [deleteBlog, { isLoading: deleting }] = useDeleteBlogMutation();
+  const [publishBlog] = usePublishBlogMutation();
+
+  const { data, isLoading, isError, error, refetch } = useMyDraftBlogApiQuery({
+    page: currentPage,
+    search: debouncedSearch || undefined,
+    category: selectedCategory || undefined,
+    page_size: itemsPerPage,
+  });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setSelectedCategory(value ? Number(value) : undefined);
+    setCurrentPage(1);
+  };
+
+  const handlePublish = async (e: React.MouseEvent, blogId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!window.confirm("Publish this draft?")) return;
+
+    setPublishingId(blogId);
+
+    try {
+      const res = await publishBlog(blogId).unwrap();
+      showSuccessToast(res);
+      await refetch();
+    } catch (err: any) {
+      alert(err?.data?.message || "Publish failed");
+    } finally {
+      setPublishingId(null);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, blogId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!window.confirm("Delete this draft?")) return;
+
+    setDeletingId(blogId);
+
+    try {
+      const res = await deleteBlog(blogId).unwrap();
+      showSuccessToast(res);
+      const remaining = (data?.count || 0) - 1;
+      const totalPages = Math.ceil(remaining / itemsPerPage);
+
+      if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(totalPages);
+      }
+
+      await refetch();
+    } catch (err: any) {
+      alert(err?.data?.message || "Delete failed");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const drafts = data?.results || [];
+  const totalCount = data?.count || 0;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const hasFilters = searchTerm || selectedCategory;
+
+  if (drafts.length === 0)
+    return (
+      <EmptyState
+        hasFilters={hasFilters}
+        setSearchTerm={setSearchTerm}
+        setDebouncedSearch={setDebouncedSearch}
+        setSelectedCategory={setSelectedCategory}
+      />
+    );
+
+  if (isLoading) return <Skeleton />;
+  if (isError) return <ErrorState error={error} refetch={refetch} />;
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">My Drafts</h1>
+        <p className="text-gray-500 mt-1">
+          You have{" "}
+          <span className="font-semibold text-amber-600">{totalCount}</span>{" "}
+          draft{totalCount !== 1 && "s"} in progress
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by title or content..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            />
+          </div>
+
+          <div className="sm:w-64 relative">
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            <select
+              value={selectedCategory ?? ""}
+              onChange={handleCategoryChange}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer"
+            >
+              <option value="">All Categories</option>
+              {categoriesData?.categories?.map((cat: any) => (
+                <option key={cat.category__id} value={cat.category__id}>
+                  {cat.category__name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <svg
+                className="w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {hasFilters && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setDebouncedSearch("");
+                setSelectedCategory(undefined);
+              }}
+              className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl transition font-medium"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {drafts.map((blog: any) => {
+          const image = getImageUrl(blog.image);
+          const userImage = getImageUrl(
+            blog.author?.profile_images?.[0]?.image,
+          );
+          const authorName =
+            blog.author?.profile?.fullname ||
+            blog.author?.username ||
+            "Anonymous";
+
+          return (
+            <div
+              key={blog.id}
+              className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-100"
+            >
+              <Link
+                to={`/blog/details/${blog.id}`}
+                className="block relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200"
+              >
+                {image ? (
+                  <img
+                    src={image}
+                    alt={blog.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg
+                      className="w-12 h-12"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                )}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-amber-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                  Draft
+                </div>
+                {blog.category?.name && (
+                  <div className="absolute bottom-3 left-3">
+                    <span className="bg-black/50 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full">
+                      {blog.category.name}
+                    </span>
+                  </div>
+                )}
+              </Link>
+
+              <div className="p-4 flex-1 flex flex-col">
+                <div className="flex items-center text-xs text-gray-500 mb-2">
+                  <MdOutlineWatchLater />
+                  {formatDate(blog.created_at)}
+                </div>
+
+                <Link to={`/blog/details/${blog.id}`} className="block mb-2">
+                  <h3 className="text-lg font-bold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                    {blog.title}
+                  </h3>
+                </Link>
+
+                {blog.content && (
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+                    {blog.content.replace(/<[^>]*>/g, "").slice(0, 80)}...
+                  </p>
+                )}
+
+                <div className="flex items-center gap-2 mt-auto pt-3 border-t border-gray-100">
+                  {userImage ? (
+                    <img
+                      src={userImage}
+                      alt={authorName}
+                      className="w-6 h-6 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                      {authorName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-700 truncate">
+                    {authorName}
+                  </span>
+                </div>
+
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={(e) => handlePublish(e, blog.id)}
+                    disabled={publishingId === blog.id}
+                    className={`flex-1 items-center py-2 text-sm font-medium rounded-xl transition-all ${
+                      publishingId === blog.id
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm hover:shadow-md hover:scale-[1.02]"
+                    }`}
+                  >
+                    {publishingId === blog.id ? (
+                      <span className="flex items-center justify-center gap-1">
+                        Publishing
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-1">
+                        <CiCirclePlus />
+                        Publish
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => handleDelete(e, blog.id)}
+                    disabled={deletingId === blog.id}
+                    className={`py-2 px-4 text-sm font-medium rounded-xl transition-all ${
+                      deletingId === blog.id
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "text-red-600 bg-red-50 hover:bg-red-100"
+                    }`}
+                  >
+                    {deleting === blog.id ? (
+                      <span className="flex items-center gap-1">
+                        Deleting...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <AiOutlineDelete />
+                        Delete
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-10">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MyDraftBlog;

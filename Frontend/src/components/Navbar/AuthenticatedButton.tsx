@@ -85,14 +85,14 @@ const AuthenticatedButton = () => {
             <FiUser className="mr-2" /> Profile
           </Link>
           <Link
-            to="/create-blog"
+            to="/blogs/create"
             onClick={() => setIsDropdownOpen(false)}
             className="flex items-center px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition"
           >
             <FiUser className="mr-2" /> Create a Blog
           </Link>
           <Link
-            to="/my-blogs" // changed from "/profile" to "/my-blogs" for consistency
+            to="/my-blogs"
             onClick={() => setIsDropdownOpen(false)}
             className="flex items-center px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition"
           >
