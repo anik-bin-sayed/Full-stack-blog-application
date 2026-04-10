@@ -67,8 +67,8 @@ class AllBlogs(APIView):
 
 
 class BlogDetails(APIView):
-    def get(self, request, id):
-        blog = get_object_or_404(Blog, id=id)
+    def get(self, request, slug):
+        blog = get_object_or_404(Blog, slug=slug)
         serializer = BlogDetailSerializer(blog)
 
         return Response(serializer.data, status=status.HTTP_200_OK)

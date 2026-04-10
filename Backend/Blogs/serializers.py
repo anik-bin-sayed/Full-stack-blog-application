@@ -64,6 +64,7 @@ class BlogCreateSerializer(serializers.ModelSerializer):
         fields = [
             "title",
             "slug",
+            "excerpt",
             "content",
             "image",
             "category",

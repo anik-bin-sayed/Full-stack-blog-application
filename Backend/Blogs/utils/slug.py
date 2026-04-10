@@ -1,9 +1,11 @@
 from django.utils.text import slugify
+from unidecode import unidecode
 from Blogs.models import Blog
 
 
 def generate_unique_slug(title):
-    base_slug = slugify(title)
+    base_text = unidecode(title)
+    base_slug = slugify(base_text)
     slug = base_slug
     counter = 1
 
