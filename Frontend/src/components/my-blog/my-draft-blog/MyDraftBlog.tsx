@@ -235,7 +235,7 @@ const MyDraftBlog = () => {
               className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-100"
             >
               <Link
-                to={`/blog/details/${blog.id}`}
+                to={`/blog/details/${blog.slug}`}
                 className="block relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200"
               >
                 {image ? (
@@ -280,7 +280,7 @@ const MyDraftBlog = () => {
                   {formatDate(blog.created_at)}
                 </div>
 
-                <Link to={`/blog/details/${blog.id}`} className="block mb-2">
+                <Link to={`/blog/details/${blog.slug}`} className="block mb-2">
                   <h3 className="text-lg font-bold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors">
                     {blog.title}
                   </h3>

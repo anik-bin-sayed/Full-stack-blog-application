@@ -99,6 +99,7 @@ const CreateBlogPage: React.FC = () => {
       const res = await createBlog(formData).unwrap();
       showSuccessToast(res);
       resetForm();
+      refetch();
     } catch (error) {
       showErrorToast(error);
     }

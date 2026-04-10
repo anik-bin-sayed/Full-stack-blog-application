@@ -17,6 +17,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import MyBlog from "../pages/my-blog/MyBlog";
 import BlogDetails from "../pages/Blog/BlogDetails";
+import ScrollToTop from "../components/ScrollToTop";
 
 // Lazy load all page components
 const Register = lazy(() => import("../pages/auth/Register"));
@@ -63,6 +64,7 @@ const Index = () => {
   return (
     <Router>
       <Navbar />
+      <ScrollToTop />
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route element={<PublicRoute />}>
@@ -73,7 +75,7 @@ const Index = () => {
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/bloggers" element={<BloggersPage />} />
           <Route path="/bloggers/:id" element={<AuthorProfile />} />
-          <Route path="/blog/details/:id" element={<BlogDetails />} />
+          <Route path="/blog/details/:slug" element={<BlogDetails />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<UserProfile />}>
               <Route path="edit" element={<UserProfileEdit />} />

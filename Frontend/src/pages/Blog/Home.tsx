@@ -1,9 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiCalendar, FiUser, FiTag } from "react-icons/fi";
-import Footer from "../../components/footer";
 
-// Sample blog post data (replace with actual data from your backend)
 const featuredPosts = [
   {
     id: 1,

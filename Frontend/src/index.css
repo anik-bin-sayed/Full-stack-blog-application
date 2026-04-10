@@ -35,3 +35,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* handle copy */
+
+.no-copy {
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}

@@ -65,9 +65,9 @@ export const blogDataApi = createApi({
       providesTags: ["blog"],
     }),
 
-    blogDetails: builder.query<any, { id: number }>({
-      query: ({ id }) => ({
-        url: `blog/blog-details/${id}`,
+    blogDetails: builder.query<any, { slug: string }>({
+      query: ({ slug }) => ({
+        url: `blog/blog-details/${slug}`,
         method: "GET",
       }),
       providesTags: ["blog"],
@@ -97,6 +97,14 @@ export const blogDataApi = createApi({
       }),
       invalidatesTags: ["blog"],
     }),
+
+    profileRecentPost: builder.query<any, void>({
+      query: (id) => ({
+        url: `/blog/my-recent-blog`,
+        method: "GET",
+      }),
+      providesTags: ["blog"],
+    }),
   }),
 });
 
@@ -111,4 +119,5 @@ export const {
   useCreateCategoryMutation,
   useCreateBlogMutation,
   useBlogDetailsQuery,
+  useProfileRecentPostQuery,
 } = blogDataApi;

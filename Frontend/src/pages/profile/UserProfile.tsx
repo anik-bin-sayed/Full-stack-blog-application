@@ -39,6 +39,8 @@ import ProfileImages from "../../components/media/ProfileImages";
 import CoverImages from "../../components/media/CoverImages";
 import CoverImage from "../../components/Modals/CoverImage";
 import ProfileImage from "../../components/Modals/ProfileImage";
+import ProfileRecentPost from "../../components/profile/ProfileRecentPost";
+import { useProfileRecentPostQuery } from "../../features/blogs/blogApi";
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return "Recently";
@@ -83,6 +85,9 @@ const UserProfile: React.FC = () => {
     error: userError,
     refetch,
   } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+
+  const { data, isLoading, error } = useProfileRecentPostQuery();
+  console.log(data?.length);
 
   if (!isAuthenticated) {
     return (
@@ -277,59 +282,20 @@ const UserProfile: React.FC = () => {
             {/* Posts Tab */}
             {activeTab === "posts" && (
               <>
-                {user.posts && user.posts.length > 0 ? (
+                {data && data?.length > 0 ? (
                   <div className="space-y-4">
-                    {/* {user.posts.map((post: any) => (
-                      <div
-                        key={post.id}
-                        className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition"
-                      >
-                        <div className="flex items-start gap-3">
-                          <img
-                            src={avatarUrl}
-                            alt={fullName}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Link
-                                to={`/blog/${post.slug}`}
-                                className="font-semibold text-gray-900 hover:underline"
-                              >
-                                {fullName}
-                              </Link>
-                              <span className="text-xs text-gray-500">
-                                {formatDate(post.created_at)}
-                              </span>
-                            </div>
-                            <Link to={`/blog/${post.slug}`}>
-                              <h3 className="text-lg font-bold text-gray-900 mt-2 hover:text-[#1877f2] transition">
-                                {post.title}
-                              </h3>
-                            </Link>
-                            <p className="text-gray-700 mt-1">{post.excerpt}</p>
-                            <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
-                              <span className="flex items-center gap-1 hover:text-[#1877f2] cursor-pointer">
-                                <FiThumbsUp size={16} /> Like
-                              </span>
-                              <span className="flex items-center gap-1 hover:text-[#1877f2] cursor-pointer">
-                                <FiMessageCircle size={16} /> Comment
-                              </span>
-                              <span className="flex items-center gap-1 hover:text-[#1877f2] cursor-pointer">
-                                <FiShare2 size={16} /> Share
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))} */}
+                    <ProfileRecentPost
+                      data={data}
+                      isLoading={isLoading}
+                      error={error}
+                    />
                   </div>
                 ) : (
                   <div className="text-center py-10">
                     <FiBookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No posts yet.</p>
                     <Link
-                      to="/blog/new"
+                      to="/blogs/create"
                       className="mt-3 inline-block text-[#1877f2] hover:underline text-sm"
                     >
                       Write your first blog post →
