@@ -13,6 +13,8 @@ from .serializers import *
 from .utils import CustomPagination
 from .permissions import IsOwner
 
+import cloudinary.uploader
+
 
 class CreateCategoryView(APIView):
     permission_classes = [IsAuthenticated]
@@ -89,8 +91,21 @@ class UpdateApiView(APIView):
     def patch(self, request, id):
         try:
             blog = Blog.objects.get(id=id)
-
             self.check_object_permissions(request, blog)
+
+            new_image = request.FILES.get("image")
+
+            if new_image:
+                if blog.image_public_id:
+                    cloudinary.uploader.destroy(blog.image_public_id)
+
+                upload_result = cloudinary.uploader.upload(new_image)
+                data = request.data.copy()
+                data["image"] = upload_result["secure_url"]
+                data["image_public_id"] = upload_result["public_id"]
+
+            else:
+                data = request.data
 
             serializer = BlogCreateSerializer(blog, data=request.data, partial=True)
 
@@ -193,6 +208,7 @@ class DeleteBlogView(APIView):
                 )
 
             blog.delete()
+            cloudinary.uploader.destroy(blog.image_public_id)
 
             return Response(
                 {"message": "Blog deleted successfully"}, status=status.HTTP_200_OK

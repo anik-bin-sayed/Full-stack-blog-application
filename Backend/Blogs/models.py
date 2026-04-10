@@ -40,6 +40,7 @@ class Blog(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     image = CloudinaryField(blank=True, null=True)
+    image_public_id = models.CharField(max_length=255, blank=True, null=True)
     slug = models.SlugField(unique=True, blank=True)
 
     is_featured = models.BooleanField(default=False)
