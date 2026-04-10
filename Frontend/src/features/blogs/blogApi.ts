@@ -105,6 +105,15 @@ export const blogDataApi = createApi({
       }),
       providesTags: ["blog"],
     }),
+
+    updateBlog: builder.mutation<any, { id: string; data: FormData }>({
+      query: ({ id, data }) => ({
+        url: `/blog/update-blog/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["blog"],
+    }),
   }),
 });
 
@@ -120,4 +129,5 @@ export const {
   useCreateBlogMutation,
   useBlogDetailsQuery,
   useProfileRecentPostQuery,
+  useUpdateBlogMutation,
 } = blogDataApi;

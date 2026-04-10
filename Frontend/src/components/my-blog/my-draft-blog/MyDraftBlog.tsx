@@ -348,13 +348,14 @@ const MyDraftBlog = () => {
                       )}
                     </button>
 
-                    <button
+                    <Link
+                      to={`/blogs/edit/${blog.slug}`}
                       className="inline-flex item-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 
                       bg-blue-50 text-blue-700 hover:bg-blue-100 
                       focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 border w-full cursor-pointer"
                     >
                       Edit
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

@@ -194,13 +194,13 @@ const BlogDetails: React.FC = () => {
 
             {/* Excerpt */}
             {blog.excerpt && (
-              <div className="bg-indigo-50/50 rounded-xl p-5 mb-6 border-l-4 border-indigo-400 italic text-gray-700 text-base sm:text-md">
+              <div className="no-copy bg-indigo-50/50 rounded-xl p-5 mb-6 border-l-4 border-indigo-400 italic text-gray-700 text-base sm:text-md text-justify">
                 {blog.excerpt}
               </div>
             )}
 
             {/* Author Info Card */}
-            <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-indigo-50/30 rounded-2xl mb-6">
+            <div className="flex flex-col md:flex-row lg:flex-row items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-indigo-50/30 rounded-2xl mb-6">
               <img
                 src={profileImage || "asdfasd"}
                 alt={blog.author?.username}
@@ -225,18 +225,20 @@ const BlogDetails: React.FC = () => {
                 >
                   Share
                 </button>
-                <button className="px-4 py-2 bg-indigo-600 rounded-full shadow-sm text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer">
+                <Link
+                  to={`/blogs/edit/${blog.slug}`}
+                  className="px-4 py-2 bg-indigo-600 rounded-full shadow-sm text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer"
+                >
                   Edit
-                </button>
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Blog Content */}
           <div className="no-copy px-6 sm:px-8 md:px-10 prose prose-lg prose-indigo max-w-none">
             <div
               dangerouslySetInnerHTML={{ __html: blog.content }}
-              className="blog-content"
+              className="blog-content text-justify"
             />
           </div>
 
