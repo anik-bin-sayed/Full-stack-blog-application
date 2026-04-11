@@ -114,12 +114,33 @@ export const blogDataApi = createApi({
       }),
       invalidatesTags: ["blog"],
     }),
+
+    getBlogs: builder.query<
+      any,
+      { page?: number; search?: string; category?: string }
+    >({
+      query: ({ page = 1, search = "", category = "" }) => {
+        let url = `/blog/all-blogs?page=${page}`;
+
+        if (search) {
+          url += `&search=${search}`;
+        }
+
+        if (category) {
+          url += `&category=${category}`;
+        }
+
+        return url;
+      },
+      providesTags: ["blog"],
+    }),
   }),
 });
 
 export const {
   useMyDraftBlogApiQuery,
   useGetCategoriesQuery,
+  useGetBlogsQuery,
   useDraftCategoriesQuery,
   useDeleteBlogMutation,
   usePublishBlogMutation,

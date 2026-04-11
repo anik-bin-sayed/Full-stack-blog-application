@@ -4,183 +4,75 @@ import {
   FiSearch,
   FiCalendar,
   FiUser,
-  FiTag,
   FiArrowRight,
+  FiX,
+  FiFilter,
 } from "react-icons/fi";
 
-// Sample blog posts data (replace with your actual API data)
-const allPosts = [
-  {
-    id: 1,
-    title: "The Future of Web Development in 2025",
-    excerpt:
-      "Explore the latest trends, tools, and technologies shaping the future of web development...",
-    author: "Sarah Johnson",
-    date: "April 1, 2026",
-    category: "Technology",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format",
-    slug: "future-web-development-2025",
-  },
-  {
-    id: 2,
-    title: "Mastering Tailwind CSS: Tips & Tricks",
-    excerpt:
-      "Learn how to build stunning UIs faster with Tailwind CSS utility-first framework...",
-    author: "Michael Chen",
-    date: "March 28, 2026",
-    category: "CSS",
-    image:
-      "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800&auto=format",
-    slug: "mastering-tailwind-css",
-  },
-  {
-    id: 3,
-    title: "10 Productivity Hacks for Developers",
-    excerpt:
-      "Boost your coding efficiency with these practical tips and tools...",
-    author: "Emily Rodriguez",
-    date: "March 25, 2026",
-    category: "Productivity",
-    image:
-      "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=800&auto=format",
-    slug: "productivity-hacks-developers",
-  },
-  {
-    id: 4,
-    title: "Getting Started with React 19",
-    excerpt: "Discover the new features and improvements in React 19...",
-    author: "David Kim",
-    date: "March 22, 2026",
-    category: "React",
-    image:
-      "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=800&auto=format",
-    slug: "getting-started-react-19",
-  },
-  {
-    id: 5,
-    title: "State Management in 2026: Redux vs Zustand",
-    excerpt: "Compare the most popular state management libraries...",
-    author: "Lisa Wang",
-    date: "March 20, 2026",
-    category: "State Management",
-    image:
-      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&auto=format",
-    slug: "state-management-redux-zustand",
-  },
-  {
-    id: 6,
-    title: "Building Accessible Web Apps",
-    excerpt: "A guide to making your applications usable by everyone...",
-    author: "James Wilson",
-    date: "March 18, 2026",
-    category: "Accessibility",
-    image:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format",
-    slug: "building-accessible-web-apps",
-  },
-  {
-    id: 7,
-    title: "TypeScript Best Practices",
-    excerpt:
-      "Improve your TypeScript code quality with these proven patterns...",
-    author: "Anna Lee",
-    date: "March 15, 2026",
-    category: "TypeScript",
-    image:
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format",
-    slug: "typescript-best-practices",
-  },
-  {
-    id: 8,
-    title: "GraphQL vs REST: Which to Choose?",
-    excerpt:
-      "A comprehensive comparison to help you decide the right API approach...",
-    author: "Tom Harris",
-    date: "March 12, 2026",
-    category: "API",
-    image:
-      "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800&auto=format",
-    slug: "graphql-vs-rest",
-  },
-  {
-    id: 9,
-    title: "UX Design Principles for Developers",
-    excerpt: "Essential UX concepts every developer should know...",
-    author: "Maria Garcia",
-    date: "March 10, 2026",
-    category: "Design",
-    image:
-      "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=800&auto=format",
-    slug: "ux-design-principles",
-  },
-];
-
-const categories = [
-  "All",
-  "Technology",
-  "CSS",
-  "Productivity",
-  "React",
-  "State Management",
-  "Accessibility",
-  "TypeScript",
-  "API",
-  "Design",
-];
+import {
+  useGetBlogsQuery,
+  useGetCategoriesQuery,
+} from "../../features/blogs/blogApi";
+import { getImageUrl } from "../../helper";
 
 const Blogs: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState<number | "All">(
+    "All",
+  );
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6;
 
-  // Sync state with URL params on mount
-  useEffect(() => {
-    const categoryParam = searchParams.get("category");
-    if (categoryParam) {
-      const formatted =
-        categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
-      if (categories.includes(formatted)) setSelectedCategory(formatted);
-    }
-    const searchParam = searchParams.get("search");
-    if (searchParam) setSearchTerm(searchParam);
-    const pageParam = searchParams.get("page");
-    if (pageParam) setCurrentPage(Number(pageParam));
-  }, [searchParams]);
+  // =========================
+  // CATEGORY API
+  // =========================
+  const { data: categoryData } = useGetCategoriesQuery();
+  const categories = categoryData || [];
 
-  // Filter posts
-  const filteredPosts = allPosts.filter((post) => {
-    const matchesCategory =
-      selectedCategory === "All" || post.category === selectedCategory;
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+  // =========================
+  // BLOGS API
+  // =========================
+  const { data, isLoading } = useGetBlogsQuery({
+    page: currentPage,
+    search: searchTerm,
+    category: selectedCategory !== "All" ? String(selectedCategory) : "",
   });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const currentPosts = filteredPosts.slice(
-    startIndex,
-    startIndex + postsPerPage,
-  );
+  const allPosts = data?.results || [];
+  const totalPages = Math.ceil((data?.count || 0) / 8);
 
-  // Update URL when filters change
+  // =========================
+  // URL SYNC (on load)
+  // =========================
   useEffect(() => {
-    const params: Record<string, string> = {};
-    if (selectedCategory !== "All")
-      params.category = selectedCategory.toLowerCase();
-    if (searchTerm) params.search = searchTerm;
-    if (currentPage > 1) params.page = currentPage.toString();
-    setSearchParams(params);
-  }, [selectedCategory, searchTerm, currentPage, setSearchParams]);
+    const categoryParam = searchParams.get("category");
+    const searchParam = searchParams.get("search");
+    const pageParam = searchParams.get("page");
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+    if (categoryParam) setSelectedCategory(Number(categoryParam));
+    if (searchParam) setSearchTerm(searchParam);
+    if (pageParam) setCurrentPage(Number(pageParam));
+  }, []);
+
+  // =========================
+  // URL UPDATE
+  // =========================
+  useEffect(() => {
+    const params: any = {};
+
+    if (selectedCategory !== "All") params.category = String(selectedCategory);
+    if (searchTerm) params.search = searchTerm;
+    if (currentPage > 1) params.page = String(currentPage);
+
+    setSearchParams(params);
+  }, [selectedCategory, searchTerm, currentPage]);
+
+  // =========================
+  // HANDLERS
+  // =========================
+  const handleCategoryChange = (id: number | "All") => {
+    setSelectedCategory(id);
     setCurrentPage(1);
   };
 
@@ -195,231 +87,258 @@ const Blogs: React.FC = () => {
     setCurrentPage(1);
   };
 
+  // =========================
+  // LOADING
+  // =========================
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading amazing stories...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <div className=" text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl text-black font-medium italic mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* HERO HEADER */}
+      <div className="relative bg-gradient-to-r from-indigo-900 via-purple-800 to-indigo-900 text-white py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative max-w-7xl mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-bold italic mb-4 tracking-tight">
             All Blogs
           </h1>
-          <p
-            className="text-lg text-black max-w-2xl mx-auto"
-            style={{ fontFamily: "Dancing Script, cursive" }}
-          >
-            Explore our collection of articles, tutorials, and insights
+          <p className="text-xl text-indigo-100 max-w-2xl mx-auto">
+            Explore articles, tutorials & insights from our community
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-12 lg:py-16">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="lg:w-80 flex-shrink-0">
-            <div className="sticky top-24 space-y-6">
-              {/* Search Box */}
-              <div className="bg-white rounded-xl shadow-md p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                  <FiSearch className="mr-2 text-indigo-600" /> Search
-                </h3>
-                <form onSubmit={handleSearch}>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search posts..."
-                      className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                    <button
-                      type="submit"
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-indigo-600"
-                    >
-                      <FiSearch />
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Categories */}
-              <div className="bg-white rounded-xl shadow-md p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">
-                  Categories
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => handleCategoryChange(cat)}
-                      className={`px-3 py-1 rounded-full text-sm transition ${
-                        selectedCategory === cat
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Active Filters */}
-              {(selectedCategory !== "All" || searchTerm) && (
-                <div className="bg-indigo-50 rounded-xl p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="text-sm font-semibold text-indigo-800">
-                      Active Filters
-                    </h4>
-                    <button
-                      onClick={clearFilters}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCategory !== "All" && (
-                      <span className="inline-flex items-center px-2 py-1 bg-indigo-200 text-indigo-800 rounded-md text-xs">
-                        Category: {selectedCategory}
-                        <button
-                          onClick={() => handleCategoryChange("All")}
-                          className="ml-1 hover:text-indigo-900"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
-                    {searchTerm && (
-                      <span className="inline-flex items-center px-2 py-1 bg-indigo-200 text-indigo-800 rounded-md text-xs">
-                        Search: {searchTerm}
-                        <button
-                          onClick={() => setSearchTerm("")}
-                          className="ml-1 hover:text-indigo-900"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </aside>
-
-          {/* Main Content - Blog Grid */}
-          <div className="flex-1">
-            {/* Results Info */}
-            <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
-              <p className="text-gray-600">
-                Showing{" "}
-                <span className="font-semibold">{currentPosts.length}</span> of{" "}
-                <span className="font-semibold">{filteredPosts.length}</span>{" "}
-                posts
-              </p>
-            </div>
-
-            {/* Blog Cards */}
-            {currentPosts.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6">
-                {currentPosts.map((post) => (
-                  <article
-                    key={post.id}
-                    className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1 flex flex-col"
+          {/* SIDEBAR - improved styling */}
+          <aside className="lg:w-80 space-y-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
+                <FiSearch className="text-indigo-500" /> Search
+              </h3>
+              <form onSubmit={handleSearch}>
+                <div className="relative">
+                  <input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl py-2.5 pl-4 pr-10 focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
+                    placeholder="Search blogs..."
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600"
                   >
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="flex items-center text-xs text-gray-500 mb-2 space-x-3">
-                        <span className="flex items-center">
-                          <FiCalendar className="mr-1" size={12} /> {post.date}
-                        </span>
-                        <span className="flex items-center">
-                          <FiUser className="mr-1" size={12} /> {post.author}
-                        </span>
-                      </div>
-                      <Link to={`/blog/${post.slug}`}>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2 hover:text-indigo-600 transition line-clamp-2">
-                          {post.title}
-                        </h3>
-                      </Link>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                        {post.excerpt}
-                      </p>
-                      <div className="flex justify-between items-center mt-auto">
-                        <span className="inline-flex items-center text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-                          <FiTag className="mr-1" size={12} /> {post.category}
-                        </span>
-                        <Link
-                          to={`/blog/${post.slug}`}
-                          className="text-indigo-600 text-sm font-medium hover:text-indigo-800 transition flex items-center"
-                        >
-                          Read more <FiArrowRight className="ml-1" size={14} />
-                        </Link>
-                      </div>
-                    </div>
-                  </article>
+                    <FiSearch />
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
+                <FiFilter className="text-indigo-500" /> Categories
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleCategoryChange("All")}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    selectedCategory === "All"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  All
+                </button>
+                {categories.map((cat: any) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryChange(cat.id)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      selectedCategory === cat.id
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-                <p className="text-gray-500 text-lg">
-                  No posts found matching your criteria.
-                </p>
+            </div>
+
+            {(searchTerm || selectedCategory !== "All") && (
+              <button
+                onClick={clearFilters}
+                className="w-full bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2.5 rounded-xl transition flex items-center justify-center gap-2"
+              >
+                <FiX /> Clear Filters
+              </button>
+            )}
+          </aside>
+
+          {/* BLOG LIST - 3 COLUMN GRID ON LG */}
+          <div className="flex-1">
+            {allPosts.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                <p className="text-gray-500 text-lg">No blogs found.</p>
                 <button
                   onClick={clearFilters}
-                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  className="mt-4 text-indigo-600 hover:text-indigo-800"
                 >
-                  Clear Filters
+                  Clear filters and try again
                 </button>
               </div>
-            )}
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                  {allPosts.map((post: any) => {
+                    const thumbnailImage = getImageUrl(post.image);
+                    return (
+                      <article
+                        key={post.id}
+                        className="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col"
+                      >
+                        <Link
+                          to={`/blog/details/${post.slug}`}
+                          className="block overflow-hidden"
+                        >
+                          <img
+                            src={thumbnailImage}
+                            alt={post.title}
+                            className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </Link>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-10 space-x-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className={`px-4 py-2 rounded-lg border ${
-                    currentPage === 1
-                      ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                      : "border-gray-300 text-gray-700 hover:bg-indigo-50 hover:border-indigo-300"
-                  } transition`}
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-2 rounded-lg transition ${
-                        currentPage === page
-                          ? "bg-indigo-600 text-white"
-                          : "border border-gray-300 text-gray-700 hover:bg-indigo-50"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ),
+                        <div className="p-5 flex flex-col flex-grow">
+                          <Link to={`/blog/details/${post.slug}`}>
+                            <h2 className="font-bold text-xl text-gray-800 line-clamp-2 hover:text-indigo-600 transition">
+                              {post.title}
+                            </h2>
+                            <p className="text-gray-500 text-sm mt-3 line-clamp-3">
+                              {post.excerpt ||
+                                post.content?.slice(0, 100) + "..."}
+                            </p>
+                          </Link>
+
+                          <div className="flex items-center justify-between mt-4 text-xs text-gray-500 border-t pt-3">
+                            <span className="flex items-center gap-1">
+                              <FiUser className="text-indigo-400" />{" "}
+                              {post.author?.username || "Anonymous"}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <FiCalendar className="text-indigo-400" />{" "}
+                              {new Date(post.created_at).toLocaleDateString(
+                                undefined,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )}
+                            </span>
+                          </div>
+
+                          <Link
+                            to={`/blog/details/${post.slug}`}
+                            className="mt-4 text-indigo-600 font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all"
+                          >
+                            Read more <FiArrowRight className="text-sm" />
+                          </Link>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+
+                {/* PAGINATION - modern style */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-12">
+                    <nav className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(p - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                          currentPage === 1
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 shadow-sm"
+                        }`}
+                      >
+                        Previous
+                      </button>
+
+                      {Array.from({ length: Math.min(totalPages, 5) })
+                        .map((_, idx) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = idx + 1;
+                          } else {
+                            const current = currentPage;
+                            if (idx === 0) pageNum = 1;
+                            else if (idx === 1)
+                              pageNum = Math.max(2, current - 1);
+                            else if (idx === 2) pageNum = current;
+                            else if (idx === 3)
+                              pageNum = Math.min(totalPages - 1, current + 1);
+                            else pageNum = totalPages;
+                          }
+                          // avoid duplicates
+                          if (pageNum < 1 || pageNum > totalPages) return null;
+                          if (
+                            pageNum ===
+                            (idx === 0
+                              ? 1
+                              : idx === 1
+                                ? Math.max(2, current - 1)
+                                : idx === 2
+                                  ? current
+                                  : idx === 3
+                                    ? Math.min(totalPages - 1, current + 1)
+                                    : totalPages)
+                          ) {
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                className={`w-10 h-10 rounded-xl text-sm font-medium transition ${
+                                  currentPage === pageNum
+                                    ? "bg-indigo-600 text-white shadow-md"
+                                    : "bg-white text-gray-700 hover:bg-indigo-50"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          }
+                          return null;
+                        })
+                        .filter(Boolean)}
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(p + 1, totalPages))
+                        }
+                        disabled={currentPage === totalPages}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
+                          currentPage === totalPages
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 shadow-sm"
+                        }`}
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
                 )}
-                <button
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={`px-4 py-2 rounded-lg border ${
-                    currentPage === totalPages
-                      ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                      : "border-gray-300 text-gray-700 hover:bg-indigo-50 hover:border-indigo-300"
-                  } transition`}
-                >
-                  Next
-                </button>
-              </div>
+              </>
             )}
           </div>
         </div>

@@ -83,7 +83,7 @@ const Login: React.FC = () => {
         dispatch(setAuth());
         setFormData(initialState);
         setErrors(initialState);
-
+        window.location.reload();
         setTimeout(() => {
           navigate("/");
         }, 1000);

@@ -2,13 +2,15 @@ import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useLogoutUserMutation } from "../../features/auth/authApi";
 import { navLinks } from "./navbarUtils";
-import { FiLogOut, FiUser } from "react-icons/fi";
+import { FiLogOut, FiUser, FiPlusCircle, FiBookOpen } from "react-icons/fi";
+import { showSuccessToast } from "../../utils/showSuccessToast";
+import { getImageUrl } from "../../helper";
 import default_profile_Image from "../../assets/default_profile_image.png";
 
 interface ResponsiveProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any; // or a proper User type
+  user: any;
   getUserInitial: () => string;
   getUserDisplayName: () => string;
 }
@@ -24,7 +26,8 @@ const Responsive = ({
 
   const handleLogout = async () => {
     try {
-      await logoutUser().unwrap();
+      const res = await logoutUser().unwrap();
+      showSuccessToast(res);
       onClose();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -32,6 +35,13 @@ const Responsive = ({
   };
 
   if (!isOpen) return null;
+
+  // Get profile image – use first image from user's profile_images array
+  const profileImage = user?.profile_images?.[0]?.image
+    ? getImageUrl(user.profile_images[0].image)
+    : null;
+
+  const hasProfileImage = !!profileImage;
 
   return (
     <div className="fixed inset-0 z-40 md:hidden">
@@ -44,9 +54,18 @@ const Responsive = ({
           {user ? (
             <div className="mb-6 pb-4 border-b border-gray-100">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                  {getUserInitial()}
-                </div>
+                {/* Profile image or fallback initials circle */}
+                {hasProfileImage ? (
+                  <img
+                    src={profileImage}
+                    alt={getUserDisplayName()}
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                    {getUserInitial()}
+                  </div>
+                )}
                 <div>
                   <div className="font-medium text-gray-800">
                     {getUserDisplayName()}
@@ -89,15 +108,29 @@ const Responsive = ({
                 <Link
                   to="/profile"
                   onClick={onClose}
-                  className="text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center"
+                  className="text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center gap-2"
                 >
-                  <FiUser className="mr-2" /> Profile
+                  <FiUser className="w-4 h-4" /> Profile
+                </Link>
+                <Link
+                  to="/blogs/create"
+                  onClick={onClose}
+                  className="text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center gap-2"
+                >
+                  <FiPlusCircle className="w-4 h-4" /> Create a Blog
+                </Link>
+                <Link
+                  to="/my-blogs"
+                  onClick={onClose}
+                  className="text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center gap-2"
+                >
+                  <FiBookOpen className="w-4 h-4" /> My Blogs
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-left text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center"
+                  className="text-left text-gray-700 hover:text-indigo-600 transition font-medium py-1 flex items-center gap-2"
                 >
-                  <FiLogOut className="mr-2" /> Logout
+                  <FiLogOut className="w-4 h-4" /> Logout
                 </button>
               </>
             )}

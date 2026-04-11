@@ -21,7 +21,7 @@ import { useAppSelector } from "../../redux/hooks";
 
 const BlogDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
 
@@ -85,7 +85,6 @@ const BlogDetails: React.FC = () => {
 
   if (isError || !blog) return <Error />;
 
-  // Calculate reading time (approx 200 words per minute)
   const readingTime = () => {
     const text = blog.content.replace(/<[^>]*>/g, "");
     const words = text.split(/\s+/).length;
@@ -98,6 +97,8 @@ const BlogDetails: React.FC = () => {
   )?.image;
   const image = getImageUrl(blog?.image) || default_blog_image;
   const profileImage = getImageUrl(currentAvatar);
+
+  const isOwnPost = blog?.author?.id == user?.id;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30 py-8 px-4 sm:px-6 lg:px-8">
@@ -225,12 +226,15 @@ const BlogDetails: React.FC = () => {
                 >
                   Share
                 </button>
-                <Link
-                  to={`/blogs/edit/${blog.slug}`}
-                  className="px-4 py-2 bg-indigo-600 rounded-full shadow-sm text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer"
-                >
-                  Edit
-                </Link>
+
+                {isOwnPost && (
+                  <Link
+                    to={`/blogs/edit/${blog.slug}`}
+                    className="px-4 py-2 bg-indigo-600 rounded-full shadow-sm text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer"
+                  >
+                    Edit
+                  </Link>
+                )}
               </div>
             </div>
           </div>
