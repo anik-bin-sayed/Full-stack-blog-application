@@ -61,11 +61,26 @@ class GetFeatureBlog(APIView):
 
 class AllBlogs(APIView):
     def get(self, request):
-        blogs = Blog.objects.filter(is_publish=True).order_by("-created_at")[:6]
+        blogs = Blog.objects.filter(is_publish=True).order_by("-created_at")
 
-        serializer = BlogListSerializer(blogs, many=True)
+        search = request.GET.get("search")
+        if search:
+            blogs = blogs.filter(
+                Q(title__icontains=search)
+                | Q(excerpt__icontains=search)
+                | Q(content__icontains=search)
+            )
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        category = request.GET.get("category")
+        if category:
+            blogs = blogs.filter(category__id=category)
+
+        paginator = CustomPagination()
+        paginated_blogs = paginator.paginate_queryset(blogs, request)
+
+        serializer = BlogListSerializer(paginated_blogs, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
 
 class BlogDetails(APIView):
