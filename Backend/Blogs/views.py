@@ -320,3 +320,123 @@ class PublicCategoriesView(APIView):
         )
 
         return Response({"categories": list(categories)})
+
+
+# Like
+
+
+class ToggleLikeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+        user = request.user
+
+        like_qs = Like.objects.filter(user=user, blog=blog)
+
+        if like_qs.exists():
+            like_qs.delete()
+            liked = False
+            message = "Unliked"
+        else:
+            Like.objects.create(user=user, blog=blog)
+            liked = True
+            message = "Liked"
+
+        data = {
+            "user": user.id,
+            "liked": liked,
+            "total_likes": Like.objects.filter(blog=blog).count(),
+            "message": message,
+        }
+
+        serializer = LikeToggleResponseSerializer(data)
+        return Response(serializer.data)
+
+
+class GetLikeDataView(APIView):
+    permission_classes = []
+
+    def get(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+
+        total_likes = Like.objects.filter(blog=blog).count()
+
+        user_liked = False
+
+        if request.user and request.user.is_authenticated:
+            user_liked = Like.objects.filter(user=request.user, blog=blog).exists()
+
+        return Response(
+            {
+                "blog_id": blog.id,
+                "total_likes": total_likes,
+                "user_liked": user_liked,
+            }
+        )
+
+
+# comment section
+class CreateCommentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+
+        serializer = CommentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(user=request.user, blog=blog)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+
+class GetCommentsAPIView(APIView):
+    def get(self, request, blog_id):
+        blog = get_object_or_404(Blog, id=blog_id)
+
+        comments = blog.comments.all().order_by("-created_at")
+
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+
+class DeleteCommentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+
+        if comment.user != request.user:
+            return Response({"error": "Not allowed"}, status=403)
+
+        comment.delete()
+        return Response({"message": "Deleted"})
+
+
+class UpdateCommentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, comment_id):
+        comment = get_object_or_404(Comment, id=comment_id)
+
+        if comment.user != request.user:
+            return Response({"error": "Not allowed"}, status=403)
+
+        content = request.data.get("content")
+
+        if not content:
+            return Response({"error": "Content is required"}, status=400)
+
+        comment.content = content
+        comment.save()
+
+        return Response(
+            {
+                "message": "Comment updated",
+                "id": comment.id,
+                "content": comment.content,
+                "created_at": comment.created_at,
+            }
+        )

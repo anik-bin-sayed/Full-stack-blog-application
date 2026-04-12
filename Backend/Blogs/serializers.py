@@ -124,3 +124,18 @@ class FeedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = ["id", "title", "author", "created_at"]
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.id")
+    blog = serializers.ReadOnlyField(source="blog.id")
+
+    class Meta:
+        model = Like
+        fields = ["id", "user", "blog"]
+
+
+class LikeToggleResponseSerializer(serializers.Serializer):
+    liked = serializers.BooleanField()
+    total_likes = serializers.IntegerField()
+    message = serializers.CharField()
