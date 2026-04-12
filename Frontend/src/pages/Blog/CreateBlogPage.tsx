@@ -316,7 +316,7 @@ const CreateBlogPage: React.FC = () => {
               </label>
             </div>
 
-            {/* Submit Button */}
+           
             <button
               type="submit"
               disabled={isCreating}
