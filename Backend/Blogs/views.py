@@ -43,7 +43,7 @@ class GetAllCategories(APIView):
 
 class GetRecentBlog(APIView):
     def get(self, request):
-        blogs = Blog.objects.filter(is_publish=True).order_by("-created_at")[:4]
+        blogs = Blog.objects.filter(is_publish=True).order_by("-created_at")[:3]
 
         serializer = BlogListSerializer(blogs, many=True)
 
@@ -52,7 +52,9 @@ class GetRecentBlog(APIView):
 
 class GetFeatureBlog(APIView):
     def get(self, request):
-        blogs = Blog.objects.filter(is_featured=True).order_by("-created_at")[:6]
+        blogs = Blog.objects.filter(is_publish=True, is_featured=True).order_by(
+            "-created_at"
+        )[:15]
 
         serializer = BlogListSerializer(blogs, many=True)
 
@@ -137,6 +139,25 @@ class UpdateApiView(APIView):
             return Response(
                 {"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND
             )
+
+
+class UserRecentPostListView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get("id")
+        print(user_id)
+        return Blog.objects.filter(author__id=user_id, is_publish=True).order_by(
+            "-created_at"
+        )[:3]
+
+
+class UserAllPostListView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get("user_id")
+        return Blog.objects.filter(author_id=user_id).order_by("-created_at")
 
 
 # My blogs views

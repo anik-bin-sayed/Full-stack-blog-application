@@ -5,11 +5,16 @@ urlpatterns = [
     path("/category/create", CreateCategoryView.as_view(), name="create-category"),
     path("/categories", GetAllCategories.as_view(), name="categories"),
     path("/all-blogs", AllBlogs.as_view(), name="all-blogs"),
-    path("/publish-blogs", GetRecentBlog.as_view(), name="publish-blogs"),
+    path("/publish-recent-blogs", GetRecentBlog.as_view(), name="publish-recent-blogs"),
     path("/feature-blogs", GetFeatureBlog.as_view(), name="feature-blogs"),
     path("/blog-details/<slug:slug>/", BlogDetails.as_view(), name="blog-details"),
     path("/create-blog", CreateBlog.as_view(), name="create-blog"),
     path("/update-blog/<int:id>", UpdateApiView.as_view(), name="update-blog"),
+    path(
+        "/user-recent-post/<int:id>",
+        UserRecentPostListView.as_view(),
+        name="user-recent-post",
+    ),
     # my Blog
     path("/my-blog", MyBlogsView.as_view(), name="my-blog"),
     path("/my-recent-blog", MyRecentBlog.as_view(), name="my-recent-blog"),
