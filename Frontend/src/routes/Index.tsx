@@ -18,7 +18,7 @@ import PublicRoute from "./PublicRoute";
 import MyBlog from "../pages/my-blog/MyBlog";
 import BlogDetails from "../pages/Blog/BlogDetails";
 import ScrollToTop from "../components/ScrollToTop";
-import EditBlogPage from "../pages/Blog/EditBlogPage";
+
 import EditBlogPost from "../pages/Blog/EditBlogPage";
 
 // Lazy load all page components

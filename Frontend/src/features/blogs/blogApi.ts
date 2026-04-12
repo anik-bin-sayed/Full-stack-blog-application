@@ -115,6 +115,30 @@ export const blogDataApi = createApi({
       invalidatesTags: ["blog"],
     }),
 
+    publicRecentBlogs: builder.query<any, void>({
+      query: () => ({
+        url: `/blog/publish-recent-blogs`,
+        method: "GET",
+      }),
+      providesTags: ["blog"],
+    }),
+
+    publicFeatureBlogs: builder.query<any, void>({
+      query: () => ({
+        url: `/blog/feature-blogs`,
+        method: "GET",
+      }),
+      providesTags: ["blog"],
+    }),
+
+    authorRecentBlogs: builder.query<any, { id: number }>({
+      query: ({ id }) => ({
+        url: `/blog/user-recent-post/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["blog"],
+    }),
+
     getBlogs: builder.query<
       any,
       { page?: number; search?: string; category?: string }
@@ -151,4 +175,7 @@ export const {
   useBlogDetailsQuery,
   useProfileRecentPostQuery,
   useUpdateBlogMutation,
+  usePublicRecentBlogsQuery,
+  usePublicFeatureBlogsQuery,
+  useAuthorRecentBlogsQuery,
 } = blogDataApi;

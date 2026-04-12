@@ -9,3 +9,11 @@ export const getImageUrl = (imagePath?: string | null) => {
   const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
   return `https://res.cloudinary.com/dtuxqsiuc/${cleanPath}`;
 };
+
+export const getLocation = (profile: any) => {
+  const parts = [];
+  if (profile?.city) parts.push(profile.city);
+  if (profile?.country) parts.push(profile.country);
+  if (profile?.address) parts.push(profile.address);
+  return parts.join(", ");
+};

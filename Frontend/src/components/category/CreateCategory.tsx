@@ -72,11 +72,6 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
                 autoFocus
                 disabled={isLoading}
               />
-              {error && (
-                <p className="text-red-500 text-sm mt-1">
-                  Failed to create category. Please try again.
-                </p>
-              )}
             </div>
 
             <div className="flex justify-end gap-3">

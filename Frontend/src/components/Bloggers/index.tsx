@@ -2,24 +2,17 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FiSearch,
-  FiUser,
-  FiMail,
-  FiMapPin,
   FiUsers,
-  FiBookOpen,
   FiCalendar,
   FiUserPlus,
-  FiUserCheck,
   FiArrowUp,
   FiTrendingUp,
   FiAward,
+  FiMapPin,
+  FiUser,
 } from "react-icons/fi";
 import { RxCross1 } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
-
-// ============================================================================
-// Types (same as original, but enhanced with sorting options)
-// ============================================================================
 
 interface Profile {
   fullname: string;
@@ -70,35 +63,23 @@ interface BloggersProps {
 
 type SortOption = "newest" | "followers" | "name";
 
-// ============================================================================
-// Improved Skeleton Card (matches new design)
-// ============================================================================
-
 const SkeletonCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
-      <div className="pt-6 pb-2 px-4 flex flex-col items-center">
-        <div className="w-24 h-24 rounded-full bg-gray-200" />
-        <div className="mt-3 h-5 w-32 bg-gray-200 rounded-full" />
-        <div className="mt-1 h-4 w-24 bg-gray-200 rounded-full" />
-      </div>
-      <div className="pb-4 px-4">
-        <div className="mt-2 h-10 w-full bg-gray-200 rounded-lg" />
-        <div className="mt-3 space-y-2">
-          <div className="h-4 w-40 bg-gray-200 rounded-full mx-auto" />
-          <div className="h-4 w-32 bg-gray-200 rounded-full mx-auto" />
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
+      <div className="p-6 flex flex-col items-center">
+        <div className="w-32 h-32 rounded-full bg-gray-200" />
+        <div className="mt-4 h-5 bg-gray-200 rounded w-32" />
+        <div className="mt-1 h-4 bg-gray-200 rounded w-24" />
+        <div className="mt-3 h-10 bg-gray-200 rounded w-full" />
+        <div className="mt-3 flex justify-center gap-3">
+          <div className="h-4 bg-gray-200 rounded w-16" />
+          <div className="h-4 bg-gray-200 rounded w-16" />
         </div>
-        <div className="mt-3 h-4 w-24 bg-gray-200 rounded-full mx-auto" />
-        <div className="mt-4 h-10 w-full bg-gray-200 rounded-lg" />
-        <div className="mt-3 h-4 w-28 bg-gray-200 rounded-full mx-auto" />
+        <div className="mt-3 h-9 bg-gray-200 rounded w-full" />
       </div>
     </div>
   );
 };
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 const Bloggers: React.FC<BloggersProps> = ({
   bloggers = [],
@@ -112,15 +93,12 @@ const Bloggers: React.FC<BloggersProps> = ({
   );
   const [sortBy, setSortBy] = useState<SortOption>("followers");
 
-  // Helper: get follower count
   const getFollowerCount = useCallback(
     (b: Blogger) => b.followers?.length || 0,
     [],
   );
 
-  // Sorting + filtering
   const processedBloggers = useMemo(() => {
-    // 1. Filter
     let filtered = bloggers;
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -136,7 +114,6 @@ const Bloggers: React.FC<BloggersProps> = ({
       });
     }
 
-    // 2. Sort
     const sorted = [...filtered];
     switch (sortBy) {
       case "newest":
@@ -202,7 +179,6 @@ const Bloggers: React.FC<BloggersProps> = ({
       .slice(0, 2);
   };
 
-  // Stats for header
   const totalBloggers = bloggers.length;
   const totalFollowers = useMemo(
     () => bloggers.reduce((sum, b) => sum + getFollowerCount(b), 0),
@@ -211,11 +187,7 @@ const Bloggers: React.FC<BloggersProps> = ({
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-10">
-          <div className="h-8 w-48 bg-gray-200 rounded-lg mx-auto mb-3 animate-pulse" />
-          <div className="h-4 w-64 bg-gray-200 rounded mx-auto animate-pulse" />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <SkeletonCard key={i} />
@@ -227,26 +199,20 @@ const Bloggers: React.FC<BloggersProps> = ({
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-4">
+          <FiUserPlus size={32} />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          Unable to load bloggers
+        </h3>
+        <p className="text-gray-500 mb-4">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-4">
-            <FiUserPlus size={32} />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Unable to load bloggers
-          </h3>
-          <p className="text-gray-500 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition transform hover:scale-105"
-          >
-            Try again
-          </button>
-        </motion.div>
+          Try again
+        </button>
       </div>
     );
   }
@@ -254,119 +220,108 @@ const Bloggers: React.FC<BloggersProps> = ({
   const showEmptyState = processedBloggers.length === 0;
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* MODERN HERO SECTION with animated gradient */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative mb-12 overflow-hidden rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl border border-white/50"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 animate-pulse" />
-          <div className="relative px-6 py-10 text-center">
-            <motion.h1
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="text-5xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-3"
-            >
-              Bloggers Hub
-            </motion.h1>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Connect with talented writers, share ideas, and grow your network
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <div className="inline-flex items-center gap-2 bg-indigo-50 rounded-full px-5 py-2 text-indigo-700 font-medium shadow-sm">
-                <FiUsers size={18} />
-                <span>{totalBloggers} active bloggers</span>
+    <div className="bg-gray-100 min-h-screen">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Bloggers Hub</h1>
+              <p className="text-sm text-gray-500">
+                Connect with talented writers
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1.5">
+                <FiUsers size={14} className="text-indigo-500" />
+                <span className="font-medium">{totalBloggers}</span>
+                <span className="text-gray-500">bloggers</span>
               </div>
-              <div className="inline-flex items-center gap-2 bg-purple-50 rounded-full px-5 py-2 text-purple-700 font-medium shadow-sm">
-                <FiTrendingUp size={18} />
-                <span>{totalFollowers} total followers</span>
+              <div className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1.5">
+                <FiTrendingUp size={14} className="text-purple-500" />
+                <span className="font-medium">{totalFollowers}</span>
+                <span className="text-gray-500">followers</span>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </div>
 
-        {/* SEARCH + SORT BAR */}
-        <div className="mb-10 flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full sm:max-w-md group">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Search + Sort Bar */}
+        <div className="bg-white rounded-lg shadow-sm p-3 mb-6 flex flex-wrap items-center gap-3 sticky top-16 z-10">
+          <div className="flex-1 min-w-[200px] relative">
+            <FiSearch
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={16}
+            />
             <input
               type="text"
-              placeholder="Search bloggers by name, username, location..."
+              placeholder="Search bloggers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-11 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm transition-all"
+              className="w-full pl-9 pr-8 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <RxCross1 size={18} />
+                <RxCross1 size={12} />
               </button>
             )}
           </div>
-
-          <div className="flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl p-1 shadow-sm border border-gray-100">
-            <span className="text-sm text-gray-500 px-2">Sort by:</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-500 mr-1">Sort:</span>
             {[
-              { value: "followers", label: "Most Followers", icon: FiAward },
+              { value: "followers", label: "Popular", icon: FiAward },
               { value: "newest", label: "Newest", icon: FiCalendar },
               { value: "name", label: "Name", icon: FiArrowUp },
             ].map((option) => (
               <button
                 key={option.value}
                 onClick={() => setSortBy(option.value as SortOption)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition ${
                   sortBy === option.value
-                    ? "bg-indigo-600 text-white shadow-md"
+                    ? "bg-indigo-600 text-white"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <option.icon size={14} />
+                <option.icon size={12} />
                 {option.label}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Results count */}
         {!showEmptyState && searchTerm && (
-          <div className="text-center -mt-6 mb-6 text-sm text-gray-500">
-            Found {processedBloggers.length} blogger
-            {processedBloggers.length !== 1 ? "s" : ""}
+          <div className="text-sm text-gray-500 mb-4">
+            {processedBloggers.length} result
+            {processedBloggers.length !== 1 && "s"}
           </div>
         )}
 
-        {/* BLOGGERS GRID - Premium Cards */}
+        {/* Cards Grid - Large profile image, no cover */}
         {showEmptyState ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
-          >
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gray-100 text-gray-400 mb-4">
-              <FiUser size={48} />
-            </div>
-            <h3 className="text-2xl font-medium text-gray-700 mb-2">
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <FiUser size={48} className="mx-auto text-gray-300 mb-3" />
+            <h3 className="text-lg font-medium text-gray-700">
               No bloggers found
             </h3>
-            <p className="text-gray-500 max-w-sm mx-auto">
-              Try adjusting your search or clear the filters
+            <p className="text-gray-500 text-sm mt-1">
+              Try adjusting your search
             </p>
             {searchTerm && (
               <button
                 onClick={clearSearch}
-                className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition transform hover:scale-105"
+                className="mt-4 px-4 py-1.5 bg-indigo-600 text-white rounded-full text-sm hover:bg-indigo-700"
               >
                 Clear search
               </button>
             )}
-          </motion.div>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
               {processedBloggers.map((blogger, idx) => {
                 const avatarUrl = getAvatarUrl(
@@ -375,138 +330,82 @@ const Bloggers: React.FC<BloggersProps> = ({
                 );
                 const name = getDisplayName(blogger);
                 const location = getLocation(blogger);
-                const year = getJoinYear(blogger);
                 const followerCount = getFollowerCount(blogger);
                 const isFollowed = followedUsers[blogger.id] || false;
                 const initials = getInitials(name);
+                const joinYear = getJoinYear(blogger);
 
                 return (
                   <motion.div
                     key={blogger.id}
                     layout
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: idx * 0.05, duration: 0.3 }}
-                    whileHover={{ y: -6 }}
-                    className="group"
+                    transition={{ delay: idx * 0.05, duration: 0.2 }}
+                    className="h-full"
                   >
-                    <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-indigo-200">
-                      {/* Subtle gradient top bar */}
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
-
-                      {/* AVATAR SECTION */}
-                      <div className="relative pt-8 pb-3 px-4 flex flex-col items-center">
-                        <div className="relative">
-                          <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-indigo-100 to-purple-100 p-1 shadow-lg group-hover:shadow-indigo-200 transition-shadow">
+                    <div className="bg-white hover:outline outline-indigo-50 rounded-md shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full max-w-2xs">
+                      <div className="flex justify-center">
+                        <Link to={`/bloggers/${blogger.id}`}>
+                          <div className=" overflow-hidden bg-gradient-to-tr from-indigo-100 to-purple-100 shadow-md">
                             {avatarUrl ? (
                               <img
                                 src={avatarUrl}
                                 alt={name}
-                                className="w-full h-full rounded-full object-cover"
+                                className="w-full h-full object-cover"
                                 onError={() => handleImageError(blogger.id)}
                               />
                             ) : (
-                              <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold">
-                                {initials || <FiUser size={32} />}
+                              <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                                {initials}
                               </div>
                             )}
                           </div>
-                          {/* Decorative online indicator with pulse */}
-                          <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white ring-2 ring-green-300 animate-pulse" />
-                        </div>
-
-                        <div className="mt-4 text-center">
-                          <h3 className="font-bold text-xl text-gray-800 group-hover:text-indigo-600 transition-colors">
-                            <Link to={`/bloggers/${blogger.id}`}>{name}</Link>
-                          </h3>
-                          <p className="text-gray-500 text-sm mt-0.5">
+                        </Link>
+                      </div>
+                      <div className="mt-4 ">
+                        <div className="text-center">
+                          <Link to={`/bloggers/${blogger.id}`}>
+                            <h3 className="font-semibold text-gray-900 hover:text-indigo-600 transition text-lg">
+                              {name}
+                            </h3>
+                          </Link>
+                          <p className="text-gray-500 text-sm">
                             @{blogger.username}
                           </p>
                         </div>
-                      </div>
 
-                      {/* CONTENT CARD */}
-                      <div className="pb-5 px-5">
-                        {blogger.profile?.bio && (
-                          <p className="mt-2 text-sm text-gray-600 line-clamp-2 text-center leading-relaxed">
-                            {blogger.profile.bio}
-                          </p>
-                        )}
-
-                        <div className="mt-4 space-y-2 text-sm text-gray-500">
-                          <div className="flex items-center  gap-2 truncate">
-                            <FiMail
-                              size={14}
-                              className="flex-shrink-0 text-gray-400"
-                            />
-                            <span className="truncate">{blogger.email}</span>
-                          </div>
+                        {/* Details row */}
+                        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-gray-500">
                           {location && (
-                            <div className="flex items-center  gap-2 truncate">
-                              <FiMapPin
-                                size={14}
-                                className="flex-shrink-0 text-gray-400"
-                              />
-                              <span className="truncate">{location}</span>
-                            </div>
+                            <span className="flex items-center gap-1">
+                              <FiMapPin size={12} /> {location}
+                            </span>
                           )}
-                          {year && (
-                            <div className="flex items-center  gap-2">
-                              <FiCalendar size={14} className="text-gray-400" />
-                              <span>Joined {year}</span>
-                            </div>
+                          {joinYear && (
+                            <span className="flex items-center gap-1">
+                              <FiCalendar size={12} /> Joined {joinYear}
+                            </span>
                           )}
-                        </div>
-
-                        {/* Follower count with nicer formatting */}
-                        <div className="mt-4 flex items-center gap-1.5 text-sm">
-                          <FiUsers size={16} className="text-indigo-400" />
-                          <span className="font-semibold text-gray-800">
-                            {followerCount.toLocaleString()}
-                          </span>
-                          <span className="text-gray-500">
-                            {followerCount === 1 ? "follower" : "followers"}
+                          <span className="flex items-center gap-1">
+                            <FiUsers size={12} /> {followerCount} followers
                           </span>
                         </div>
 
-                        {/* FOLLOW BUTTON with animation */}
-                        <motion.div className="mt-4" whileTap={{ scale: 0.97 }}>
+                        {/* Follow Button */}
+                        <div className="my-4 px-4">
                           <button
                             onClick={(e) => handleFollowToggle(e, blogger.id)}
-                            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                              isFollowed
-                                ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
-                                : "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg"
-                            }`}
+                            className={`cursor-pointer w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2
+    ${
+      isFollowed
+        ? "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 hover:shadow-sm"
+        : "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md hover:shadow-lg hover:scale-[1.02]"
+    }`}
                           >
-                            {isFollowed ? (
-                              <>
-                                <FiUserCheck
-                                  size={16}
-                                  className="text-green-600"
-                                />{" "}
-                                Following
-                              </>
-                            ) : (
-                              <>
-                                <FiUserPlus size={16} /> Follow
-                              </>
-                            )}
+                            {isFollowed ? <>✓ Following</> : <>+ Follow</>}
                           </button>
-                        </motion.div>
-
-                        <div className="mt-4 text-center">
-                          <Link
-                            to={`/bloggers/${blogger.id}`}
-                            className="inline-flex items-center gap-1.5 text-indigo-600 text-sm font-medium hover:text-indigo-800 transition-all group/link"
-                          >
-                            View full profile{" "}
-                            <FiBookOpen
-                              size={14}
-                              className="group-hover/link:translate-x-1 transition-transform"
-                            />
-                          </Link>
                         </div>
                       </div>
                     </div>

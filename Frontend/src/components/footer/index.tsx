@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { categories } from "../../pages/Blog/Home";
+
 import Logo from "../Logo";
+import { useGetCategoriesQuery } from "../../features/blogs/blogApi";
 
 const Footer = () => {
+  const { data: categories, isLoading } = useGetCategoriesQuery();
   return (
     <footer className="bg-gray-900 text-gray-400 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,13 +25,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="hover:text-white transition">
+                <Link to="/blogs" className="hover:text-white transition">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition">
-                  About
+                <Link to="/bloggers" className="hover:text-white transition">
+                  Bloggers
                 </Link>
               </li>
             </ul>
@@ -37,16 +39,17 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-semibold mb-4">Categories</h4>
             <ul className="space-y-2 text-sm">
-              {categories.slice(0, 4).map((cat) => (
-                <li key={cat}>
-                  <Link
-                    to={`/blog?category=${cat.toLowerCase()}`}
-                    className="hover:text-white transition"
-                  >
-                    {cat}
-                  </Link>
-                </li>
-              ))}
+              {categories &&
+                categories.slice(0, 4).map((cat) => (
+                  <li key={cat.id}>
+                    <Link
+                      to={`/blogs?category=${cat.id}`}
+                      className="hover:text-white transition"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
             </ul>
           </div>
           <div>

@@ -296,10 +296,12 @@ const CreateBlogPage: React.FC = () => {
                   name="is_featured"
                   checked={form.is_featured}
                   onChange={handleChange}
-                  className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                  disabled={!form.is_publish}
+                  className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <span className="text-gray-700 font-medium">Featured Blog</span>
               </label>
+
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"

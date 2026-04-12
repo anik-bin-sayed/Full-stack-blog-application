@@ -14,21 +14,20 @@ import {
   FiGithub,
   FiTwitter,
   FiLinkedin,
-  FiLink,
   FiBriefcase,
   FiFlag,
   FiHeart,
   FiUserPlus,
-  FiMoreHorizontal,
-  FiEdit2,
   FiGrid,
   FiInfo,
   FiUserCheck,
   FiImage,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
+import Loader from "../../components/Loader";
+import { useAuthorRecentBlogsQuery } from "../../features/blogs/blogApi";
+import AuthorProfilePost from "../../components/profile/AuthorProfilePost";
 
-// ================= TYPES =================
 interface Profile {
   bio: string;
   fullname: string;
@@ -92,7 +91,6 @@ interface Blogger {
 
 type TabType = "posts" | "about" | "friends" | "photos";
 
-// ================= HELPER COMPONENTS =================
 const SocialLink: React.FC<{
   href: string;
   icon: React.ReactNode;
@@ -112,7 +110,6 @@ const SocialLink: React.FC<{
   );
 };
 
-// Friend Avatar Component (for followers/following)
 const FriendAvatar: React.FC<{ username: string; email: string }> = ({
   username,
   email,
@@ -134,7 +131,6 @@ const FriendAvatar: React.FC<{ username: string; email: string }> = ({
   );
 };
 
-// ================= MAIN COMPONENT =================
 const AuthorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [imageError, setImageError] = useState(false);
@@ -149,6 +145,10 @@ const AuthorProfile: React.FC = () => {
     skip: !id,
   });
 
+  const { data: authorProfileRecentPost } = useAuthorRecentBlogsQuery(
+    { id: Number(id) },
+    { skip: !id },
+  );
   // Normalize data
   const user = Array.isArray(blogger) ? blogger[0] : blogger;
 
@@ -199,7 +199,6 @@ const AuthorProfile: React.FC = () => {
     });
   };
 
-  // Extract fields
   const email = user?.email;
   const displayName = user?.profile?.fullname || user?.username;
   const bio = user?.profile?.bio;
@@ -222,26 +221,7 @@ const AuthorProfile: React.FC = () => {
   const coverUrl = getCoverUrl();
 
   // Loading
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100">
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="animate-pulse">
-            <div className="h-64 bg-gray-200 rounded-2xl mb-4" />
-            <div className="flex justify-between items-end -mt-16 ml-6 mb-4">
-              <div className="w-28 h-28 rounded-full bg-gray-300 border-4 border-white" />
-            </div>
-            <div className="h-6 w-48 bg-gray-200 rounded mt-2 ml-6" />
-            <div className="h-4 w-32 bg-gray-200 rounded mt-1 ml-6" />
-            <div className="flex gap-4 mt-4 ml-6">
-              <div className="h-8 w-24 bg-gray-200 rounded-full" />
-              <div className="h-8 w-8 bg-gray-200 rounded-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <Loader />;
 
   if (error || !user) {
     return (
@@ -456,13 +436,23 @@ const AuthorProfile: React.FC = () => {
       case "posts":
       default:
         return (
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 text-center">
-            <FiBookOpen className="mx-auto text-gray-400 text-4xl mb-3" />
-            <h3 className="text-lg font-medium text-gray-700">No posts yet</h3>
-            <p className="text-gray-500 text-sm mt-1">
-              Blog posts from {displayName} will appear here.
-            </p>
-          </div>
+          <>
+            {authorProfileRecentPost ? (
+              <AuthorProfilePost
+                authorProfileRecentPost={authorProfileRecentPost}
+              />
+            ) : (
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+                <FiBookOpen className="mx-auto text-gray-400 text-4xl mb-3" />
+                <h3 className="text-lg font-medium text-gray-700">
+                  No posts yet
+                </h3>
+                <p className="text-gray-500 text-sm mt-1">
+                  Blog posts from {displayName} will appear here.
+                </p>
+              </div>
+            )}
+          </>
         );
     }
   };
@@ -568,7 +558,7 @@ const AuthorProfile: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as TabType)}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition border-b-2 ${
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition border-b-2 cursor-pointer ${
                       isActive
                         ? "border-blue-600 text-blue-600"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"

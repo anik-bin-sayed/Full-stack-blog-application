@@ -41,6 +41,9 @@ import CoverImage from "../../components/Modals/CoverImage";
 import ProfileImage from "../../components/Modals/ProfileImage";
 import ProfileRecentPost from "../../components/profile/ProfileRecentPost";
 import { useProfileRecentPostQuery } from "../../features/blogs/blogApi";
+import { getLocation } from "../../helper";
+import Error from "../../components/Error";
+import NotAuthenticate from "../../components/NotAuthenticate";
 
 const formatDate = (dateString?: string) => {
   if (!dateString) return "Recently";
@@ -49,14 +52,6 @@ const formatDate = (dateString?: string) => {
     month: "long",
     day: "numeric",
   });
-};
-
-const getLocation = (profile: any) => {
-  const parts = [];
-  if (profile?.city) parts.push(profile.city);
-  if (profile?.country) parts.push(profile.country);
-  if (profile?.address) parts.push(profile.address);
-  return parts.join(", ");
 };
 
 const UserProfile: React.FC = () => {
@@ -87,41 +82,10 @@ const UserProfile: React.FC = () => {
   } = useGetMeQuery(undefined, { skip: !isAuthenticated });
 
   const { data, isLoading, error } = useProfileRecentPostQuery();
-  console.log(data?.length);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-lg max-w-md w-full">
-          <div className="w-20 h-20 bg-[#1877f2]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiUser className="w-10 h-10 text-[#1877f2]" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">Please Log In</h2>
-          <p className="text-gray-500 mt-2">
-            You need to be logged in to view your profile.
-          </p>
-          <Link
-            to="/login"
-            className="mt-6 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#1877f2] text-white rounded-full hover:bg-[#166fe5] transition w-full"
-          >
-            Go to Login →
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+  if (!isAuthenticated) return <NotAuthenticate />;
   if (userLoading) return <Loader />;
-
-  if (userError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center text-red-600 bg-white p-6 rounded-xl shadow">
-          <p>Failed to load profile. Please try again later.</p>
-        </div>
-      </div>
-    );
-  }
+  if (userError) return <Error />;
   if (!user) return null;
 
   const profile = user.profile || {};
@@ -132,7 +96,6 @@ const UserProfile: React.FC = () => {
   const bio = profile.bio || "";
   const followerCount = user.followers?.length || 0;
   const followingCount = user.following?.length || 0;
-  const postCount = user.posts?.length || 0;
 
   const socials = {
     twitter: profile.twitter || "",
@@ -161,7 +124,6 @@ const UserProfile: React.FC = () => {
   const avatarUrl = currentProfile?.image || default_profile_Image;
   return (
     <div className="min-h-screen bg-[#f0f2f5] pb-10">
-      {/* Cover Image Section */}
       <div className="relative">
         <div className="h-64 md:h-80 lg:h-96 w-full overflow-hidden bg-gray-200">
           <img
@@ -171,16 +133,15 @@ const UserProfile: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
-        {/* Edit Cover Button */}
+
         <button
           onClick={() => setCoverImageModal(true)}
-          className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm transition-all duration-200 z-10"
+          className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2 backdrop-blur-sm transition-all duration-200 z-10 cursor-pointer"
         >
           <FiCamera size={16} /> Edit Cover
         </button>
       </div>
 
-      {/* Profile Picture & Info Card - Picture placed above name */}
       <div className="max-w-5xl mx-auto px-4 relative">
         <div className="relative flex justify-center md:justify-start -mt-16 md:-mt-20 mb-4">
           <div className="relative group">
@@ -193,7 +154,7 @@ const UserProfile: React.FC = () => {
             </div>
             <button
               onClick={() => setProfileImageModal(true)}
-              className="absolute bottom-1 right-1 bg-white hover:bg-gray-100 rounded-full p-2 shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100"
+              className="absolute bottom-1 right-1 bg-white hover:bg-gray-100 rounded-full p-2 shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
               aria-label="Edit profile picture"
             >
               <FiEdit2 size={14} className="text-gray-700" />
@@ -211,7 +172,7 @@ const UserProfile: React.FC = () => {
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">@{user.username}</p>
                 {bio && (
-                  <p className="text-gray-700 mt-3 max-w-2xl leading-relaxed">
+                  <p className="text-gray-700 mt-3 max-w-2xl leading-relaxed text-justify">
                     {bio}
                   </p>
                 )}
@@ -219,25 +180,20 @@ const UserProfile: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#e4e6eb] hover:bg-gray-300 text-gray-800 font-semibold rounded-full transition text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#e4e6eb] hover:bg-gray-300 text-gray-800 font-semibold rounded-full transition text-sm cursor-pointer"
                 >
                   <FiEdit2 size={16} /> Edit Profile
                 </button>
                 <button
                   onClick={() => setIsPasswordModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#e4e6eb] hover:bg-gray-300 text-gray-800 font-semibold rounded-full transition text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#e4e6eb] hover:bg-gray-300 text-gray-800 font-semibold rounded-full transition text-sm cursor-pointer"
                 >
                   <FiLock size={16} /> Change Password
                 </button>
               </div>
             </div>
 
-            {/* Stats Row */}
             <div className="flex flex-wrap gap-6 mt-5 pt-4 border-t border-gray-100">
-              <div className="text-center md:text-left">
-                <span className="font-bold text-gray-900">{postCount}</span>
-                <span className="text-gray-500 ml-1">posts</span>
-              </div>
               <div className="text-center md:text-left">
                 <span className="font-bold text-gray-900">{followerCount}</span>
                 <span className="text-gray-500 ml-1">followers</span>
@@ -252,7 +208,6 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="mt-4 bg-white rounded-2xl shadow-md overflow-hidden">
           <div className="flex border-b border-gray-200">
             {[
@@ -266,7 +221,7 @@ const UserProfile: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex-1 py-3 text-center font-semibold transition flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-3 text-center font-semibold transition flex items-center justify-center gap-2 cursor-pointer ${
                     isActive
                       ? "text-[#1877f2] border-b-2 border-[#1877f2]"
                       : "text-gray-600 hover:bg-gray-50"
@@ -305,7 +260,6 @@ const UserProfile: React.FC = () => {
               </>
             )}
 
-            {/* About Tab */}
             {activeTab === "about" && (
               <div className="space-y-6">
                 <div>
@@ -409,14 +363,13 @@ const UserProfile: React.FC = () => {
                     {/* Profile Button */}
                     <button
                       onClick={() => SetImageSection("profile")}
-                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
                         imageSection === "profile"
                           ? "text-blue-600"
                           : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       <span className="flex items-center gap-2">
-                        <span>📷</span>
                         Profile Images
                       </span>
                     </button>
@@ -424,14 +377,13 @@ const UserProfile: React.FC = () => {
                     {/* Cover Button */}
                     <button
                       onClick={() => SetImageSection("cover")}
-                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      className={`relative z-10 px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
                         imageSection === "cover"
                           ? "text-blue-600"
                           : "text-gray-500 hover:text-gray-700"
                       }`}
                     >
                       <span className="flex items-center gap-2">
-                        <span>🖼️</span>
                         Cover Images
                       </span>
                     </button>
