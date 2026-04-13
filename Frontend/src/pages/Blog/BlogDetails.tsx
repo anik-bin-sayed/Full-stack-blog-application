@@ -24,13 +24,10 @@ import Loader from "../../components/Loader";
 import Error from "../../components/Error";
 import { useAppSelector } from "../../redux/hooks";
 import { showErrorToast } from "../../utils/showErrorToast";
-import Comments from "../../components/Comments.tsx";
-import GetCommentSection from "../../components/Comments.tsx/GetCommentsSection.tsx";
-import GetCommentModal from "../../components/Comments.tsx/GetCommentModal.tsx";
+import Comments from "../../components/Comments/index.tsx";
+import CommentsWrapper from "../../components/Comments/CommentsWrapper.tsx";
 
 const BlogDetails: React.FC = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [copied, setCopied] = useState(false);
@@ -39,7 +36,6 @@ const BlogDetails: React.FC = () => {
     data: blog,
     isLoading,
     isError,
-    error,
   } = useBlogDetailsQuery({ slug: String(slug) });
 
   const [likeBlog, { isLoading: liking }] = useLikeBlogMutation();
@@ -248,7 +244,7 @@ const BlogDetails: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <ChatBubbleLeftEllipsisIcon className="w-4 h-4 text-indigo-500" />
-                <span>{blog.comments?.length || 0} comments</span>
+                <span>{comments?.count || 0} comments</span>
               </div>
             </div>
 
@@ -339,7 +335,6 @@ const BlogDetails: React.FC = () => {
                 </span>
               </button>
 
-              {/* Tooltip */}
               {!isAuthenticated && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs px-3 py-1 rounded whitespace-nowrap">
                   Please login to like and comment
@@ -357,28 +352,11 @@ const BlogDetails: React.FC = () => {
             {isAuthenticated && <Comments blog_id={blog.id} />}
 
             {comments && comments.length > 0 && (
-              <GetCommentSection
-                comments={comments}
-                authorId={authorId}
-                commentCount={comment?.count}
-              />
-            )}
-            {comments && comments.length > 0 && comment?.count > 10 && (
-              <div>
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="text-sm hover:underline cursor-pointer hover:text-indigo-500"
-                >
-                  See more....
-                </button>
-              </div>
+              <CommentsWrapper authorId={authorId} blog_id={blog?.id} />
             )}
           </div>
         </div>
       </div>
-      {modalOpen && (
-        <GetCommentModal setModalOpen={setModalOpen} blog_id={blog?.id} />
-      )}
     </div>
   );
 };

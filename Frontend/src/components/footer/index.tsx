@@ -5,7 +5,8 @@ import Logo from "../Logo";
 import { useGetCategoriesQuery } from "../../features/blogs/blogApi";
 
 const Footer = () => {
-  const { data: categories, isLoading } = useGetCategoriesQuery();
+  const { data: categories } = useGetCategoriesQuery();
+
   return (
     <footer className="bg-gray-900 text-gray-400 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,9 +67,6 @@ const Footer = () => {
               </a>
             </div>
           </div>
-        </div>
-        <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm">
-          &copy; {new Date().getFullYear()} BlogSpace. All rights reserved.
         </div>
       </div>
     </footer>

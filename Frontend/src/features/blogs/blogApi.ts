@@ -217,6 +217,15 @@ export const blogDataApi = createApi({
       }),
       invalidatesTags: ["blog"],
     }),
+
+    updateComment: builder.mutation<any, { comment_id: number; data: any }>({
+      query: ({ comment_id, data }) => ({
+        url: `/blog/comment/update/${comment_id}/`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["blog"],
+    }),
   }),
 });
 
@@ -245,4 +254,5 @@ export const {
   useCreateCommentMutation,
   useGetCommentQuery,
   useDeleteCommentMutation,
+  useUpdateCommentMutation,
 } = blogDataApi;

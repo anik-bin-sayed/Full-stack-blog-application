@@ -35,7 +35,7 @@ const Blogs: React.FC = () => {
   });
 
   const allPosts = data?.results || [];
-  const totalPages = Math.ceil((data?.count || 0) / 8);
+  const totalPages = Math.ceil((data?.count || 0) / 9);
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");

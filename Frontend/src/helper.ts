@@ -17,3 +17,12 @@ export const getLocation = (profile: any) => {
   if (profile?.address) parts.push(profile.address);
   return parts.join(", ");
 };
+
+export const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
