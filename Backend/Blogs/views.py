@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
-from .utils import CustomPagination
+from .utils import CustomPagination, CommentPagination
 from .permissions import IsOwner
 
 import cloudinary.uploader
@@ -398,8 +398,12 @@ class GetCommentsAPIView(APIView):
 
         comments = blog.comments.all().order_by("-created_at")
 
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data)
+        paginator = CommentPagination()
+        result_page = paginator.paginate_queryset(comments, request)
+
+        serializer = CommentSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
 
 class DeleteCommentAPIView(APIView):
@@ -408,7 +412,12 @@ class DeleteCommentAPIView(APIView):
     def delete(self, request, comment_id):
         comment = get_object_or_404(Comment, id=comment_id)
 
-        if comment.user != request.user:
+        blog_owner = comment.blog.author
+
+        is_comment_owner = comment.user == request.user
+        is_blog_owner = blog_owner == request.user
+
+        if not (is_comment_owner or is_blog_owner):
             return Response({"error": "Not allowed"}, status=403)
 
         comment.delete()

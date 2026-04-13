@@ -43,7 +43,7 @@ class BlogListSerializer(serializers.ModelSerializer):
 class BlogDetailSerializer(serializers.ModelSerializer):
     author = UserDetailSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
-    comments = serializers.SerializerMethodField()
+    # comments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -52,7 +52,7 @@ class BlogDetailSerializer(serializers.ModelSerializer):
 
     def get_comments(self, obj):
         comments = obj.comments.all().order_by("-created_at")
-        return CategorySerializer(comments, many=True).data
+        return CommentSerializer(comments, many=True).data
 
     def get_likes_count(self, obj):
         return obj.likes.count()

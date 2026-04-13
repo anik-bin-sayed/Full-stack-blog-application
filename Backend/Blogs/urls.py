@@ -42,7 +42,9 @@ urlpatterns = [
     path("like/get/<int:blog_id>/", GetLikeDataView.as_view(), name="get-like"),
     # comment
     path(
-        "comment/<int:blog_id>/", CreateCommentAPIView.as_view(), name="create-comment"
+        "comment/create/<int:blog_id>/",
+        CreateCommentAPIView.as_view(),
+        name="create-comment",
     ),
     path("comments/<int:blog_id>/", GetCommentsAPIView.as_view(), name="get-comment"),
     path(
