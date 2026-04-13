@@ -383,10 +383,12 @@ class CreateCommentAPIView(APIView):
     def post(self, request, blog_id):
         blog = get_object_or_404(Blog, id=blog_id)
 
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentCreateSerializer(
+            data=request.data, context={"request": request, "blog": blog}
+        )
 
         if serializer.is_valid():
-            serializer.save(user=request.user, blog=blog)
+            serializer.save()
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
@@ -396,7 +398,7 @@ class GetCommentsAPIView(APIView):
     def get(self, request, blog_id):
         blog = get_object_or_404(Blog, id=blog_id)
 
-        comments = blog.comments.all().order_by("-created_at")
+        comments = blog.comments.filter(parent__isnull=True).order_by("-created_at")
 
         paginator = CommentPagination()
         result_page = paginator.paginate_queryset(comments, request)

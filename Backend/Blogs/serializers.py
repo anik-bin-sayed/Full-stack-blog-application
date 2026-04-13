@@ -85,21 +85,37 @@ class BlogCreateSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserDetailSerializer(read_only=True)
+    replies = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
-        fields = ["id", "user", "content", "created_at"]
+        fields = ["id", "user", "content", "created_at", "replies"]
+
+    def get_replies(self, obj):
+        replies = obj.replies.all().order_by("created_at")
+        return CommentSerializer(replies, many=True).data
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
+    parent_id = serializers.IntegerField(required=False)
+
     class Meta:
         model = Comment
-        fields = ["content"]
+        fields = ["content", "parent_id"]
 
     def create(self, validated_data):
         user = self.context["request"].user
         blog = self.context["blog"]
-        return Comment.objects.create(user=user, blog=blog, **validated_data)
+
+        parent_id = validated_data.pop("parent_id", None)
+
+        parent = None
+        if parent_id:
+            parent = Comment.objects.get(id=parent_id)
+
+        return Comment.objects.create(
+            user=user, blog=blog, parent=parent, **validated_data
+        )
 
 
 class BloggerSerializer(serializers.ModelSerializer):
