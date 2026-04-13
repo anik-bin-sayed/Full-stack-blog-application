@@ -6,16 +6,19 @@ import type {
   BlogQueryParams,
 } from "../../types/blog/blogApiResponse";
 
+type CreateCommentPayload = {
+  blog_id: number;
+  data: {
+    content: string;
+  };
+};
+
 export const blogDataApi = createApi({
   reducerPath: "blogApi",
   baseQuery: baseQueryWithReauth,
   tagTypes: ["blog"],
 
   endpoints: (builder) => ({
-    // =====================================
-    // MY BLOG (USER)
-    // =====================================
-
     myDraftBlogApi: builder.query<BlogListResponse, BlogQueryParams>({
       query: (params) => ({
         url: "/blog/my-draft-blog",
@@ -42,9 +45,7 @@ export const blogDataApi = createApi({
       providesTags: ["blog"],
     }),
 
-    // =====================================
     // CATEGORY
-    // =====================================
 
     getCategories: builder.query<any, void>({
       query: (params) => ({
@@ -82,9 +83,7 @@ export const blogDataApi = createApi({
       invalidatesTags: ["blog"],
     }),
 
-    // =====================================
     // BLOG CRUD
-    // =====================================
 
     createBlog: builder.mutation<any, FormData>({
       query: (body) => ({
@@ -112,9 +111,7 @@ export const blogDataApi = createApi({
       invalidatesTags: ["blog"],
     }),
 
-    // =====================================
     // BLOG DETAILS / PUBLIC
-    // =====================================
 
     blogDetails: builder.query<any, { slug: string }>({
       query: ({ slug }) => ({
@@ -148,9 +145,7 @@ export const blogDataApi = createApi({
       providesTags: ["blog"],
     }),
 
-    // =====================================
     // TOGGLE
-    // =====================================
 
     publishBlog: builder.mutation<any, void>({
       query: (id) => ({
@@ -160,9 +155,7 @@ export const blogDataApi = createApi({
       invalidatesTags: ["blog"],
     }),
 
-    // =====================================
     // ALL BLOGS (PUBLIC LIST)
-    // =====================================
 
     getBlogs: builder.query<
       any,
@@ -199,6 +192,31 @@ export const blogDataApi = createApi({
       }),
       providesTags: ["blog"],
     }),
+    // comments
+    createComment: builder.mutation<any, CreateCommentPayload>({
+      query: ({ blog_id, data }) => ({
+        url: `/blog/comment/create/${blog_id}/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["blog"],
+    }),
+
+    getComment: builder.query<any, { blog_id: number; page?: number }>({
+      query: ({ blog_id, page = 1 }) => ({
+        url: `/blog/comments/${blog_id}/?page=${page}`,
+        method: "GET",
+      }),
+      providesTags: ["blog"],
+    }),
+
+    deleteComment: builder.mutation<any, { comment_id: number }>({
+      query: ({ comment_id }) => ({
+        url: `/blog/comment/delete/${comment_id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["blog"],
+    }),
   }),
 });
 
@@ -222,4 +240,9 @@ export const {
   // Like
   useLikeBlogMutation,
   useUserIsLikeQuery,
+
+  // comments
+  useCreateCommentMutation,
+  useGetCommentQuery,
+  useDeleteCommentMutation,
 } = blogDataApi;
