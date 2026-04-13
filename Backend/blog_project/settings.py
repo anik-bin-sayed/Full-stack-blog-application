@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "accounts",
     "userProfile",
     "Blogs",
+    "notifications",
     # "Blogs",
     # third-party
     "rest_framework",

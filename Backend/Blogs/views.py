@@ -13,6 +13,8 @@ from .serializers import *
 from .utils import CustomPagination, CommentPagination
 from .permissions import IsOwner
 
+from notifications.models import Notification
+
 import cloudinary.uploader
 
 
@@ -343,6 +345,14 @@ class ToggleLikeAPIView(APIView):
             liked = True
             message = "Liked"
 
+            if blog.author != user:
+                Notification.objects.create(
+                    sender=user,
+                    receiver=blog.author,
+                    blog=blog,
+                    notification_type="like",
+                )
+
         data = {
             "user": user.id,
             "liked": liked,
@@ -350,8 +360,7 @@ class ToggleLikeAPIView(APIView):
             "message": message,
         }
 
-        serializer = LikeToggleResponseSerializer(data)
-        return Response(serializer.data)
+        return Response(data)
 
 
 class GetLikeDataView(APIView):
@@ -388,7 +397,17 @@ class CreateCommentAPIView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
+            comment = serializer.save()
+
+            if blog.author != request.user:
+                Notification.objects.create(
+                    sender=request.user,
+                    receiver=blog.author,
+                    blog=blog,
+                    comment=comment,
+                    notification_type="comment",
+                )
+
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
