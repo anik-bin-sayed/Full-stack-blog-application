@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppSelector } from "../../redux/hooks";
 import { HiMenu, HiX } from "react-icons/hi";
+import { IoIosNotificationsOutline } from "react-icons/io";
 
 import Logo from "../Logo";
 import NotAuthenticatedButton from "./NotAuthenticatedButton";
@@ -10,6 +11,8 @@ import { useGetMeQuery } from "../../features/profile/profileApi";
 import { navLinks } from "./navbarUtils";
 import Responsive from "./Responsive";
 import Loader from "../Loader";
+import Notifications from "../Notifications";
+import { IoNotificationsOutline } from "react-icons/io5";
 
 const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
@@ -17,6 +20,8 @@ const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -97,6 +102,20 @@ const Navbar: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
+              {isAuthenticated && (
+                <div>
+                  <button
+                    onClick={() => setOpenModal(true)}
+                    className="relative p-2 rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 cursor-pointer"
+                  >
+                    <IoNotificationsOutline className="w-6 h-6" />
+
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full shadow-md">
+                      0
+                    </span>
+                  </button>
+                </div>
+              )}
               {!isAuthenticated ? (
                 <NotAuthenticatedButton />
               ) : (
@@ -114,6 +133,8 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      {openModal && <Notifications setOpenModal={setOpenModal} />}
 
       <Responsive
         isOpen={isMenuOpen}

@@ -55,7 +55,6 @@ const CommentItem: React.FC<{
 
   const [updateComment, { isLoading }] = useUpdateCommentMutation();
 
-  console.log(comment?.id);
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editContent.trim()) return;
