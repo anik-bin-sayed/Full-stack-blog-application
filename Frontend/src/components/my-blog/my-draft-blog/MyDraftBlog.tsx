@@ -29,7 +29,6 @@ const MyDraftBlog = () => {
   const [publishingId, setPublishingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);

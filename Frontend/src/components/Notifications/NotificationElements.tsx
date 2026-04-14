@@ -9,10 +9,9 @@ import { showErrorToast } from "../../utils/showErrorToast";
 
 type NotificationProps = {
   notification: NotificationType;
-  onMarkAsRead?: (id: number) => void; // optional callback to mark as read
+  onMarkAsRead?: (id: number) => void;
 };
 
-// Map notification type to icon component
 const getIcon = (type: string) => {
   switch (type) {
     case "like":
