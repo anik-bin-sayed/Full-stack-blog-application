@@ -155,3 +155,9 @@ class LikeToggleResponseSerializer(serializers.Serializer):
     liked = serializers.BooleanField()
     total_likes = serializers.IntegerField()
     message = serializers.CharField()
+
+
+class BlogMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = ["id", "title", "slug"]

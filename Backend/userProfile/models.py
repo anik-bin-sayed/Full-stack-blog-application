@@ -6,7 +6,10 @@ User = settings.AUTH_USER_MODEL
 
 
 class ProfileImage(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
     image = CloudinaryField("image")
     is_current = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)

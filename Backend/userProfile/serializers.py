@@ -133,3 +133,15 @@ class UserCoverPhotoSerializer(serializers.ModelSerializer):
         model = ProfileImage
         fields = ["id", "image", "uploaded_at", "user"]
         read_only_fields = ["uploaded_at", "is_current"]
+
+
+class ProfileMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["id", "fullname"]
+
+
+class ProfileMiniImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ["id", "image"]
