@@ -28,7 +28,6 @@ const AuthenticatedButton = () => {
   const email = user?.email;
   const avatarUrl = currentProfile?.image || default_profile_Image;
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

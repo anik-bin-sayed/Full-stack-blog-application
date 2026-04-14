@@ -1,7 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQueryWithReauth from "../baseQueryWithReauth";
 
-// Image
 export interface Image {
   id: number;
   image: string;
@@ -9,7 +8,6 @@ export interface Image {
   uploaded_at: string;
 }
 
-// Profile
 export interface Profile {
   bio: string;
   phone: string;
@@ -32,7 +30,6 @@ export interface Profile {
   updated_at: string;
 }
 
-// User
 export interface User {
   id: number;
   username: string;
@@ -42,7 +39,6 @@ export interface User {
   cover_images: Image[];
 }
 
-// Pagination Response
 export interface PaginatedUsers {
   count: number;
   next: string | null;
@@ -50,12 +46,9 @@ export interface PaginatedUsers {
   results: User[];
 }
 
-// Common ID response
 type IdResponse = {
   id: number;
 };
-
-// ================= API =================
 
 export const profileApi = createApi({
   reducerPath: "profileApi",
@@ -98,8 +91,6 @@ export const profileApi = createApi({
       invalidatesTags: ["Profile"],
     }),
 
-    // ================= PROFILE IMAGE =================
-
     profilePhoto: builder.query<Image, void>({
       query: () => ({
         url: `/profile/current-photo`,
@@ -140,8 +131,6 @@ export const profileApi = createApi({
       }),
       invalidatesTags: ["Profile"],
     }),
-
-    // COVER IMAGE
 
     coverPhoto: builder.query<Image, void>({
       query: () => ({

@@ -16,27 +16,32 @@ const initialState = {
   confirmPassword: "",
 };
 
+type StrengthLevel = "Weak" | "Fair" | "Good" | "Strong";
+
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>(initialState);
   const [errors, setErrors] = useState<FormErrors>(initialState);
+  const [passwordStrength, setPasswordStrength] =
+    useState<StrengthLevel>("Weak");
+
+  const [strengthScore, setStrengthScore] = useState(0);
   // Query
   const [registerUser, { isLoading }] = useRegisterUserMutation();
 
-  const [passwordStrength, setPasswordStrength] =
-    useState<StrengthLevel>("Weak");
-  const [strengthScore, setStrengthScore] = useState(0);
-
   useEffect(() => {
     if (
-      formData.confirmPassword &&
       formData.password &&
-      formData.password === formData.confirmPassword &&
-      errors.confirmPassword
+      formData.confirmPassword &&
+      formData.password === formData.confirmPassword
     ) {
-      setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+      setErrors((prev) => {
+        if (!prev.confirmPassword) return prev;
+
+        return { ...prev, confirmPassword: "" };
+      });
     }
-  }, [formData.password, formData.confirmPassword, errors.confirmPassword]);
+  }, [formData.password, formData.confirmPassword]);
 
   useEffect(() => {
     const pwd = formData.password;
@@ -62,7 +67,6 @@ const Register: React.FC = () => {
     }
   }, [formData.password]);
 
-  // Validation functions
   const validateUsername = (value: string): string => {
     if (!value.trim()) return "Username is required";
     if (value.length < 3) return "Username must be at least 3 characters";
@@ -113,7 +117,6 @@ const Register: React.FC = () => {
           break;
         case "password":
           error = validatePassword(value);
-          // Also validate confirm password if it has a value
           if (!error && formData.confirmPassword) {
             const confirmError = validateConfirm(
               formData.confirmPassword,
@@ -150,7 +153,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     if (validateAll()) {
       try {
-        const { confirmPassword, ...registerPayload } = formData;
+        const { ...registerPayload } = formData;
         const res = await registerUser(registerPayload).unwrap();
         showSuccessToast(res);
 

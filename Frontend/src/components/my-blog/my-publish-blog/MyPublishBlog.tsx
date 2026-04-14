@@ -20,8 +20,6 @@ import { TbCategoryPlus } from "react-icons/tb";
 import EmptyState from "../EmptyState";
 import { showSuccessToast } from "../../../utils/showSuccessToast";
 
-// Helpers (same as draft
-
 const MyPublishBlog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -33,7 +31,6 @@ const MyPublishBlog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -42,10 +39,9 @@ const MyPublishBlog = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch categories (assuming same hook works)
   const { data: categoriesData } = usePublicCategoriesQuery();
   const [deleteBlog, { isLoading: deleting }] = useDeleteBlogMutation();
-  const [publishBlog, { isLoading: publishing }] = usePublishBlogMutation();
+  const [publishBlog] = usePublishBlogMutation();
 
   const { data, isLoading, isError, error, refetch } = useMyPublicBlogQuery({
     page: currentPage,
@@ -129,7 +125,6 @@ const MyPublishBlog = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Published Blogs</h1>
         <p className="text-gray-500 mt-1">
@@ -139,7 +134,6 @@ const MyPublishBlog = () => {
         </p>
       </div>
 
-      {/* Filters Bar */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
@@ -295,9 +289,7 @@ const MyPublishBlog = () => {
                     {authorName}
                   </span>
                 </div>
-                {/* buttons */}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {/* Unpublish Button */}
                   <button
                     onClick={(e) => handlePublish(e, blog.id)}
                     disabled={publishingId === blog.id}
@@ -317,7 +309,6 @@ const MyPublishBlog = () => {
                     )}
                   </button>
 
-                  {/* Delete Button */}
                   <div className="w-full flex items-center justify-between gap-4">
                     <button
                       onClick={(e) => handleDelete(e, blog.id)}

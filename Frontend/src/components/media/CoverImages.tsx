@@ -47,7 +47,7 @@ const CoverImages = () => {
         const res = await deleteCoverImage(id).unwrap();
         showSuccessToast(res.message || "Cover image deleted successfully");
         refetch();
-        if (selectedImageIndex !== null) closeSlider(); // close slider if open
+        if (selectedImageIndex !== null) closeSlider();
       } catch (error) {
         console.error("Delete failed:", error);
       }
@@ -135,14 +135,12 @@ const CoverImages = () => {
                 />
               </div>
 
-              {/* Main Cover Badge */}
               {image.id === mainCoverId && (
                 <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10 shadow-md">
                   <FaStar size={10} /> Main Cover
                 </div>
               )}
 
-              {/* Overlay Actions */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 z-20 backdrop-blur-sm">
                 <button
                   onClick={(e) => handleSetMain(image.id, e)}
@@ -180,7 +178,6 @@ const CoverImages = () => {
                 </button>
               </div>
 
-              {/* Date Badge */}
               {image.created_at && (
                 <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md z-10 backdrop-blur-sm">
                   {new Date(image.created_at).toLocaleDateString(undefined, {
@@ -195,7 +192,6 @@ const CoverImages = () => {
         </div>
       </div>
 
-      {/* Fullscreen Slider Modal */}
       {selectedImageIndex !== null && images[selectedImageIndex] && (
         <div
           className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center transition-all duration-300"
@@ -205,14 +201,12 @@ const CoverImages = () => {
             className="relative max-w-6xl w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Main Image */}
             <img
               src={images[selectedImageIndex].image}
               alt="Cover full size"
               className="w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
 
-            {/* Navigation Buttons */}
             {selectedImageIndex > 0 && (
               <button
                 onClick={prevImage}
@@ -230,7 +224,6 @@ const CoverImages = () => {
               </button>
             )}
 
-            {/* Close Button */}
             <button
               onClick={closeSlider}
               className="absolute top-4 right-4 text-white bg-black/60 hover:bg-black/80 rounded-full p-2 transition-all duration-200 hover:scale-110"
@@ -238,7 +231,6 @@ const CoverImages = () => {
               <FaTimes size={20} />
             </button>
 
-            {/* Image Counter & Badge */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm flex items-center gap-2">
               <span>
                 {selectedImageIndex + 1} / {images.length}
@@ -250,7 +242,6 @@ const CoverImages = () => {
               )}
             </div>
 
-            {/* Action Buttons inside Slider */}
             <div className="absolute bottom-4 right-4 flex gap-3">
               {images[selectedImageIndex].id !== mainCoverId && (
                 <button
@@ -268,7 +259,6 @@ const CoverImages = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(images[selectedImageIndex].id, e as any);
-                  // closeSlider will be called inside handleDelete after refetch
                 }}
                 className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl"
               >

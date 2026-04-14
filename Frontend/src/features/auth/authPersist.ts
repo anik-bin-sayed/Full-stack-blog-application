@@ -2,8 +2,8 @@ import Cookies from "js-cookie";
 
 import type { RootState } from "../../app/store";
 import { AUTH_COOKIE_NAME, TOKEN_REFRESH_INTERVAL } from "../../config";
+import { showErrorToast } from "../../utils/showErrorToast";
 
-// Types
 type RefreshTokenFn = () => Promise<unknown>;
 type GetStateFn = () => RootState;
 
@@ -26,7 +26,7 @@ export const startTokenRefreshTimer = (
         await refreshTokenFn();
       }
     } catch (error) {
-      // Silently handle token refresh errors
+      showErrorToast(error);
     }
   }, TOKEN_REFRESH_INTERVAL);
 };

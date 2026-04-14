@@ -1,6 +1,5 @@
 import React, { useState, memo } from "react";
 import { useUploadCoverImageMutation } from "../../features/profile/profileApi";
-import { showSuccessToast } from "../../utils/showSuccessToast";
 import { showErrorToast } from "../../utils/showErrorToast";
 
 interface CoverImageProps {
@@ -31,10 +30,8 @@ const CoverImage = ({ isOpen, onClose }: CoverImageProps) => {
     formData.append("image", selectedImage);
 
     try {
-      const res = await uploadCoverImage(formData).unwrap();
-      showSuccessToast(res);
+      await uploadCoverImage(formData).unwrap();
 
-      // reset
       setSelectedImage(null);
       setPreview(null);
       onClose();
@@ -51,7 +48,6 @@ const CoverImage = ({ isOpen, onClose }: CoverImageProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 relative">
-        {/* Close */}
         <button
           onClick={handleClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-black text-xl"
@@ -63,7 +59,6 @@ const CoverImage = ({ isOpen, onClose }: CoverImageProps) => {
           Upload Cover Image
         </h2>
 
-        {/* Preview */}
         {preview ? (
           <img
             src={preview}

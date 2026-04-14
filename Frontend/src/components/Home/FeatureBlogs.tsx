@@ -31,11 +31,9 @@ const FeatureBlogs = () => {
   useEffect(() => {
     const container = carouselRef.current;
     if (container && needCarousel) {
-      // Initial check after images load
       const timer = setTimeout(checkScrollButtons, 100);
       container.addEventListener("scroll", checkScrollButtons);
       window.addEventListener("resize", checkScrollButtons);
-      // Also observe when DOM changes (images loaded)
       const observer = new ResizeObserver(checkScrollButtons);
       observer.observe(container);
       return () => {
@@ -50,7 +48,7 @@ const FeatureBlogs = () => {
   const scrollLeft = () => {
     if (carouselRef.current) {
       const container = carouselRef.current;
-      const scrollAmount = container.clientWidth * 0.9; // scroll by ~90% of visible width
+      const scrollAmount = container.clientWidth * 0.9;
       container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
     }
   };
@@ -132,7 +130,6 @@ const FeatureBlogs = () => {
 
   return (
     <div className="py-12">
-      {/* Section Header */}
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold text-gray-900">Featured Articles</h2>
         <div className="w-16 h-0.5 bg-indigo-500 mx-auto mt-3 rounded-full" />
@@ -141,7 +138,6 @@ const FeatureBlogs = () => {
         </p>
       </div>
 
-      {/* Carousel / Grid Container */}
       <div className="relative px-4 md:px-8">
         {needCarousel && (
           <>
@@ -209,7 +205,6 @@ const FeatureBlogs = () => {
                   }
                 `}
               >
-                {/* Image */}
                 <Link to={`/blog/details/${post.slug}`} className="block">
                   <img
                     src={image}
@@ -218,7 +213,6 @@ const FeatureBlogs = () => {
                   />
                 </Link>
 
-                {/* Content */}
                 <div className="p-5 flex flex-col flex-grow">
                   {/* Meta */}
                   <div className="flex items-center text-xs text-gray-500 mb-2 space-x-3">
@@ -233,19 +227,16 @@ const FeatureBlogs = () => {
                     </span>
                   </div>
 
-                  {/* Title */}
                   <Link to={`/blog/details/${post.slug}`}>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-indigo-600 transition">
                       {post.title}
                     </h3>
                   </Link>
 
-                  {/* Content preview */}
                   <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3 flex-grow">
                     {contentPreview}
                   </p>
 
-                  {/* Footer */}
                   <div className="flex items-center justify-between mt-2">
                     <span
                       className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-full ${categoryColor}`}

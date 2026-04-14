@@ -1,15 +1,6 @@
 import React, { useState } from "react";
-import {
-  FiLock,
-  FiEye,
-  FiEyeOff,
-  FiAlertCircle,
-  FiCheckCircle,
-  FiX,
-  FiCheck,
-} from "react-icons/fi";
+import { FiEye, FiEyeOff, FiX } from "react-icons/fi";
 
-// Password strength checker
 const getPasswordStrength = (password: string) => {
   let strength = 0;
   if (password.length >= 8) strength++;
@@ -78,11 +69,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
 
     try {
-      //   await changePassword({
-      //     current_password: currentPassword,
-      //     new_password: newPassword,
-      //   }).unwrap();
-
       setSuccess("Password changed successfully!");
 
       setTimeout(() => {
@@ -109,15 +95,12 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   return (
     <div className="fixed inset-0 z-50">
       <div className="flex items-center justify-center min-h-screen px-4">
-        {/* backdrop */}
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm"
           onClick={handleClose}
         />
 
-        {/* modal */}
         <div className="relative bg-white w-full max-w-md rounded-2xl shadow-xl p-6 z-10">
-          {/* header */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold">Change Password</h2>
             <button onClick={handleClose}>
@@ -126,7 +109,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* current */}
             <div className="mb-4">
               <label className="text-sm">Current Password</label>
               <div className="relative">
@@ -146,7 +128,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               </div>
             </div>
 
-            {/* new */}
             <div className="mb-4">
               <label className="text-sm">New Password</label>
               <div className="relative">
@@ -165,7 +146,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 </button>
               </div>
 
-              {/* strength */}
               {newPassword && (
                 <p className="text-xs mt-2 text-gray-600">
                   Strength: {strengthLabels[passwordStrength]}
@@ -173,7 +153,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               )}
             </div>
 
-            {/* confirm */}
             <div className="mb-4">
               <label className="text-sm">Confirm Password</label>
               <div className="relative">
@@ -199,15 +178,12 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               )}
             </div>
 
-            {/* error */}
             {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-            {/* success */}
             {success && (
               <p className="text-green-600 text-sm mb-3">{success}</p>
             )}
 
-            {/* buttons */}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
@@ -218,10 +194,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               </button>
               <button
                 type="submit"
-                // disabled={!isFormValid || isLoading}
                 className="bg-indigo-600 text-white px-4 py-1 rounded disabled:opacity-50"
               >
-                {/* {isLoading ? "Updating..." : "Update"} */}fasdf
+                Change
               </button>
             </div>
           </form>

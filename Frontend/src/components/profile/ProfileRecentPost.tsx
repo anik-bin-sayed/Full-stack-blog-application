@@ -2,12 +2,11 @@ import React from "react";
 import { getImageUrl } from "../../helper";
 import { Link } from "react-router-dom";
 
-// ====================== Type Definitions ======================
 interface Author {
   id: number;
   username: string;
   email: string;
-  profile?: any; // You can expand this if profile structure is known
+  profile?: any;
   profile_images?: any[];
 }
 
@@ -65,7 +64,6 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
     );
   }
 
-  // Handle error state
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
@@ -75,7 +73,6 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
     );
   }
 
-  // Handle empty data
   if (!data || (Array.isArray(data) && data.length === 0)) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -89,7 +86,6 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
   return (
     <div className="space-y-6">
       {posts.map((post) => {
-        console.log(post);
         const postThumbnail = getImageUrl(post.image);
         return (
           <article
@@ -100,20 +96,17 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
               to={`/blog/details/${post.slug}`}
               className="flex flex-col md:flex-row"
             >
-              {/* Post Image */}
               {post.image && (
                 <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto">
                   <img
-                    src={postThumbnail}
+                    src={postThumbnail || ""}
                     alt={post.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
 
-              {/* Post Content */}
               <div className="flex-1 p-5">
-                {/* Category & Date Row */}
                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-2">
                   {post.category && (
                     <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
@@ -159,7 +152,6 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {/* Likes */}
                     <span className="flex items-center gap-1">
                       <svg
                         className="w-4 h-4 text-red-500"
@@ -177,14 +169,12 @@ const ProfileRecentPost: React.FC<ProfileRecentPostProps> = ({
                       {post.likes_count}
                     </span>
 
-                    {/* Read more indicator */}
                     <span className="text-blue-600 hover:text-blue-800 font-medium text-sm">
                       Read more →
                     </span>
                   </div>
                 </div>
 
-                {/* Featured Badge (if applicable) */}
                 {post.is_featured && (
                   <div className="mt-3">
                     <span className="inline-block bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded">

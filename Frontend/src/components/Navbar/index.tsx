@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppSelector } from "../../redux/hooks";
 import { HiMenu, HiX } from "react-icons/hi";
-import { IoIosNotificationsOutline } from "react-icons/io";
 
 import Logo from "../Logo";
 import NotAuthenticatedButton from "./NotAuthenticatedButton";
@@ -12,7 +11,7 @@ import { navLinks } from "./navbarUtils";
 import Responsive from "./Responsive";
 import Loader from "../Loader";
 import Notifications from "../Notifications";
-import { IoNotificationsOutline } from "react-icons/io5";
+import NotificationButton from "../NotificationButton";
 
 const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
@@ -76,6 +75,7 @@ const Navbar: React.FC = () => {
   };
 
   if (isLoading) return <Loader />;
+
   return (
     <>
       <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
@@ -102,20 +102,7 @@ const Navbar: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-              {isAuthenticated && (
-                <div>
-                  <button
-                    onClick={() => setOpenModal(true)}
-                    className="relative p-2 rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 cursor-pointer"
-                  >
-                    <IoNotificationsOutline className="w-6 h-6" />
-
-                    <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full shadow-md">
-                      0
-                    </span>
-                  </button>
-                </div>
-              )}
+              <NotificationButton setOpenModal={setOpenModal} />
               {!isAuthenticated ? (
                 <NotAuthenticatedButton />
               ) : (
@@ -123,13 +110,17 @@ const Navbar: React.FC = () => {
               )}
             </div>
 
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
-            </button>
+            <div className="md:hidden p-2 rounded-md text-gray-600 focus:outline-none flex items-center space-x-4">
+              <NotificationButton setOpenModal={setOpenModal} />
+
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="cursor-pointer p-1 rounded border-gray-300 hover:border-black border"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -142,6 +133,7 @@ const Navbar: React.FC = () => {
         user={user}
         getUserInitial={getUserInitial}
         getUserDisplayName={getUserDisplayName}
+        setOpenModal={setOpenModal}
       />
     </>
   );

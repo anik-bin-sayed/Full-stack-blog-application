@@ -1,9 +1,14 @@
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 
-export const formatDate = (dateString: string) => {
-  return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+export const formatDate = (date?: string | Date) => {
+  if (!date) return "";
+
+  const parsedDate = new Date(date);
+
+  if (isNaN(parsedDate.getTime())) return "";
+
+  return format(parsedDate, "dd MMM yyyy");
 };
-
 export const getImageUrl = (imagePath?: string | null) => {
   if (!imagePath) return null;
   const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;

@@ -1,14 +1,12 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import baseQueryWithReauth from "../baseQueryWithReauth";
 
-// Request body type
 interface RegisterUserRequest {
   username: string;
   email: string;
   password: string;
 }
 
-// Response type
 interface RegisterUserResponse {
   id: number;
   username: string;

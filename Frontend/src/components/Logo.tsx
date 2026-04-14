@@ -8,7 +8,7 @@ const Logo = () => {
       className={`text-2xl bg-clip-text hover:opacity-80 transition  `}
       style={{ fontFamily: "Dancing Script, cursive" }}
     >
-      PostVerse
+      Blogify
     </Link>
   );
 };

@@ -2,12 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import {
   FiCalendar,
-  FiClock,
   FiBookOpen,
   FiMessageCircle,
   FiHeart,
   FiArrowRight,
-  FiUser,
   FiStar,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -19,13 +17,13 @@ interface Post {
   slug: string;
   excerpt?: string;
   featured_image?: string;
-  image?: string; // added to match your code
+  image?: string;
   published_date?: string;
-  created_at?: string; // used in formatDate
+  created_at?: string;
   read_time?: number;
   comment_count?: number;
   like_count?: number;
-  likes_count?: number; // your original field
+  likes_count?: number;
   category?: { name: string };
   author?: { username: string };
   is_featured?: boolean;
@@ -36,7 +34,6 @@ interface AuthorProfilePostProps {
   authorProfileRecentPost?: Post[];
 }
 
-// Helper to extract plain text excerpt from HTML content
 const getExcerpt = (html?: string, length = 120) => {
   if (!html) return "";
   const plainText = html.replace(/<[^>]*>/g, "");
@@ -78,7 +75,6 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
               to={`/blog/details/${post.slug}`}
               className="flex flex-col md:flex-row"
             >
-              {/* Post Image - enhanced with overlay and scale on hover */}
               {post.image && (
                 <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto overflow-hidden bg-gray-100 relative">
                   <img
@@ -86,14 +82,11 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  {/* Subtle gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               )}
 
-              {/* Post Content - enhanced spacing and typography */}
               <div className="flex-1 p-5 md:p-6">
-                {/* Category & Date Row */}
                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mb-3">
                   {post.category && (
                     <span className="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide">
@@ -102,21 +95,18 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
                   )}
                   <span className="flex items-center gap-1 text-gray-400 text-xs">
                     <FiCalendar size={12} />
-                    {formatDate(post?.created_at)}
+                    {formatDate(post?.created_at || "")}
                   </span>
                 </div>
 
-                {/* Title - larger and bolder on hover */}
                 <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-200">
                   {post.title}
                 </h3>
 
-                {/* Excerpt - cleaner */}
                 <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">
                   {getExcerpt(post.content)}
                 </p>
 
-                {/* Footer row - author, stats, read more */}
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500">
                   <div className="flex items-center gap-2">
                     {post.author && (
@@ -137,7 +127,6 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
                       </span>
                     </span>
 
-                    {/* Comments (optional) */}
                     {post.comment_count !== undefined && (
                       <span className="flex items-center gap-1 text-gray-500">
                         <FiMessageCircle size={14} />
@@ -145,7 +134,6 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
                       </span>
                     )}
 
-                    {/* Read more - with animated arrow */}
                     <span className="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-1 transition-all group-hover:gap-2">
                       Read more
                       <FiArrowRight
@@ -156,7 +144,6 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
                   </div>
                 </div>
 
-                {/* Featured Badge */}
                 {post.is_featured && (
                   <div className="mt-3">
                     <span className="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 text-xs px-2.5 py-1 rounded-full border border-yellow-200">
