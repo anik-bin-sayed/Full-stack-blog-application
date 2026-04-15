@@ -144,4 +144,4 @@ class ProfileMiniSerializer(serializers.ModelSerializer):
 class ProfileMiniImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileImage
-        fields = ["id", "image"]
+        fields = ["id", "image", "is_current"]

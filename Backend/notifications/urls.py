@@ -13,4 +13,9 @@ urlpatterns = [
         MarkAllAsReadView.as_view(),
         name="mark-all-as-read",
     ),
+    path(
+        "/delete-all-notification",
+        DeleteAllNotificationsAPIView.as_view(),
+        name="mark-all-as-read",
+    ),
 ]
