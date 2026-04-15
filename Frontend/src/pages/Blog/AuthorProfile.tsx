@@ -30,6 +30,8 @@ import AuthorProfilePost from "../../components/profile/AuthorProfilePost";
 import { formatDate, getImageUrl, getLocation } from "../../helper";
 import Error from "../../components/Error";
 
+import defaultCoverImage from "../../assets/default_cover_image.png";
+
 type TabType = "posts" | "about" | "friends" | "photos";
 
 const SocialLink: React.FC<{
@@ -118,8 +120,9 @@ const AuthorProfile: React.FC = () => {
   const currentCoverImage = user?.cover_images.find(
     (img: { is_current: boolean }) => img.is_current,
   );
-  const imagePath = currentCoverImage?.image || user?.cover_images[0]?.image;
-  const coverUrl = getImageUrl(imagePath);
+
+  const imagePathCoverImage = currentCoverImage?.image;
+  const coverUrl = getImageUrl(imagePathCoverImage) || defaultCoverImage;
 
   if (isLoading) return <Loader />;
   if (error || !user) return <Error />;

@@ -40,7 +40,6 @@ const CommentsWrapper = ({ blog_id, authorId }: any) => {
         blog_id={blog_id}
       />
 
-      {/* loader trigger */}
       <div ref={loaderRef} className="h-10 flex justify-center">
         {isFetching && <p className="text-xs text-gray-400">Loading more...</p>}
       </div>

@@ -74,12 +74,20 @@ const NotificationElements: React.FC<NotificationProps> = ({
     user_data,
   } = notification;
   const displayName = user_data?.fullname || sender?.name || "Someone";
-  const avatar = getImageUrl(profile_image?.[0].image) || "";
+
+  const currentProfile = profile_image?.find(
+    (img: { is_current: boolean }) => img.is_current,
+  );
+
+  const profilePath = currentProfile?.image;
+
+  const avatar = getImageUrl(profilePath);
+
   const blogSlug = blog_data?.slug;
 
   const handleClick = async () => {
     try {
-      await markAsRead(id);
+      await markAsRead({ id }).unwrap();
     } catch (error) {
       showErrorToast(error);
     }

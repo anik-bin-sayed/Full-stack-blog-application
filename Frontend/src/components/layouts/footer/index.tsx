@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import Logo from "../Logo";
-import { useGetCategoriesQuery } from "../../features/blogs/blogApi";
+import Logo from "../../Logo";
+import { useGetCategoriesQuery } from "../../../features/blogs/blogApi";
 
 const Footer = () => {
   const { data: categories } = useGetCategoriesQuery();

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useUpdateCommentMutation } from "../../features/blogs/blogApi";
 import { showErrorToast } from "../../utils/showErrorToast";
 
+import DefaultProfileImage from "../../assets/default_profile_image.png";
+
 export type Comment = {
   id: number;
   authorId: number;
@@ -47,8 +49,19 @@ const CommentItem: React.FC<{
   const [editComment, setEditComment] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
 
-  const profileImage = getImageUrl(comment?.user?.profile_images?.[0]?.image);
-  const loggedInUserImage = getImageUrl(user?.profile_images?.[0].image);
+  const currentProfile = comment?.user?.profile_images.find(
+    (img: { is_current: boolean }) => img.is_current,
+  );
+  const profileImage =
+    getImageUrl(currentProfile?.image) || DefaultProfileImage;
+
+  const loggedInUserImagePath = user?.profile_images.find(
+    (img: { is_current: boolean }) => img.is_current,
+  );
+
+  const loggedInUserImage =
+    getImageUrl(loggedInUserImagePath) || DefaultProfileImage;
+
   const commentDate = formatDate(comment?.created_at);
   const displayName =
     comment.user?.profile?.fullname || comment.user?.username || "Anonymous";
@@ -78,18 +91,13 @@ const CommentItem: React.FC<{
   return (
     <div className={`${isReply ? "ml-10 mt-3" : "mt-4"}`}>
       <div className="flex gap-3">
-        {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt={displayName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span>{displayName.charAt(0).toUpperCase()}</span>
-            )}
+            <img
+              src={profileImage}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 
@@ -146,15 +154,11 @@ const CommentItem: React.FC<{
                 <div className="flex gap-3">
                   <div className="flex-shrink-0">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-bold text-xs shadow-sm overflow-hidden">
-                      {loggedInUserImage ? (
-                        <img
-                          src={loggedInUserImage}
-                          alt="profile"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        user?.username?.charAt(0).toUpperCase() || "U"
-                      )}
+                      <img
+                        src={loggedInUserImage}
+                        alt="profile"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   </div>
                   <div className="flex-1 space-y-3">

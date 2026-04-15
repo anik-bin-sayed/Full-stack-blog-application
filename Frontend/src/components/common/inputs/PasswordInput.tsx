@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { PasswordInputProps } from "../../types/InputPropsType";
+import type { PasswordInputProps } from "../../../types/InputPropsType";
 import { RxEyeOpen } from "react-icons/rx";
 import { VscEyeClosed } from "react-icons/vsc";
 

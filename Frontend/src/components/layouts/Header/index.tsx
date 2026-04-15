@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
-import { useAppSelector } from "../../redux/hooks";
+import { useAppSelector } from "../../../redux/hooks";
 import { HiMenu, HiX } from "react-icons/hi";
 
-import Logo from "../Logo";
+import Logo from "../../Logo";
 import NotAuthenticatedButton from "./NotAuthenticatedButton";
 import AuthenticatedButton from "./AuthenticatedButton";
-import { useGetMeQuery } from "../../features/profile/profileApi";
+import { useGetMeQuery } from "../../../features/profile/profileApi";
 import { navLinks } from "./navbarUtils";
 import Responsive from "./Responsive";
-import Loader from "../Loader";
-import Notifications from "../Notifications";
+import Loader from "../../Loader";
+import Notifications from "../../Notifications";
 import NotificationButton from "../NotificationButton";
 
 const Navbar: React.FC = () => {

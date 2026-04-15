@@ -9,9 +9,12 @@ export const formatDate = (date?: string | Date) => {
 
   return format(parsedDate, "dd MMM yyyy");
 };
+
 export const getImageUrl = (imagePath?: string | null) => {
-  if (!imagePath) return null;
+  if (!imagePath || typeof imagePath !== "string") return null;
+
   const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+
   return `https://res.cloudinary.com/dtuxqsiuc/${cleanPath}`;
 };
 

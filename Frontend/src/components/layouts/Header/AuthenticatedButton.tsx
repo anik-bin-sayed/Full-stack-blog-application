@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FiLogOut, FiUser, FiUserCheck } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { useProfilePhotoQuery } from "../../features/profile/profileApi";
-import { useAppSelector } from "../../redux/hooks";
-import { useLogoutUserMutation } from "../../features/auth/authApi";
-import default_profile_Image from "../../assets/default_profile_image.png";
-import { showSuccessToast } from "../../utils/showSuccessToast";
-import { logout } from "../../features/auth/authSlice";
+import { useProfilePhotoQuery } from "../../../features/profile/profileApi";
+import { useAppSelector } from "../../../redux/hooks";
+import { useLogoutUserMutation } from "../../../features/auth/authApi";
+import default_profile_Image from "../../../assets/default_cover_image.png";
+import { showSuccessToast } from "../../../utils/showSuccessToast";
+import { logout } from "../../../features/auth/authSlice";
 import { useDispatch } from "react-redux";
-import Loader from "../Loader";
+import Loader from "../../Loader";
 
 const AuthenticatedButton = () => {
   const { isAuthenticated, user, isLoading } = useAppSelector(

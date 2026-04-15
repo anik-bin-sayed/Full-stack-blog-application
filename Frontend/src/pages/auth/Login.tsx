@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import SubmitButton from "../../utils/Button";
 import { Link, useNavigate } from "react-router-dom";
-import PasswordInput from "../../components/inputs/PasswordInput";
-import Input from "../../components/inputs/Input";
+import PasswordInput from "../../components/common/inputs/PasswordInput";
+import Input from "../../components/common/inputs/Input";
 import type { LoginErrors, LoginFormData } from "../../types/InputPropsType";
 import { showErrorToast } from "../../utils/showErrorToast";
 import { useLoginUserMutation } from "../../features/auth/authApi";

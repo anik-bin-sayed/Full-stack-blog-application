@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 
 import SubmitButton from "../../utils/Button";
-import Input from "../../components/inputs/Input";
-import PasswordInput from "../../components/inputs/PasswordInput";
+import Input from "../../components/common/inputs/Input";
+import PasswordInput from "../../components/common/inputs/PasswordInput";
 import { useRegisterUserMutation } from "../../features/auth/authApi";
 import type { FormData, FormErrors } from "../../types/RegisterTypes";
 import { Link, useNavigate } from "react-router-dom";

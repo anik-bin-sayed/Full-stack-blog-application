@@ -1,7 +1,7 @@
 import React from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
-import { useAppSelector } from "../redux/hooks";
-import { useNotificationsQuery } from "../features/notifications/notificationApi";
+import { useAppSelector } from "../../redux/hooks";
+import { useNotificationsQuery } from "../../features/notifications/notificationApi";
 
 const NotificationButton = ({
   setOpenModal,
@@ -9,12 +9,12 @@ const NotificationButton = ({
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const { data: notifications } = useNotificationsQuery(undefined, {
+  const { data } = useNotificationsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
-
+  const notifications = data?.results;
   const unreadCount = notifications?.filter(
-    (item) => item.is_read === false,
+    (item) => item?.is_read === false,
   ).length;
 
   return (

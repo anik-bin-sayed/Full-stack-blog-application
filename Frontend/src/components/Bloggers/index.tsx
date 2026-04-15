@@ -11,11 +11,9 @@ import {
   FiMapPin,
   FiUser,
   FiHeart,
-  FiBookmark,
 } from "react-icons/fi";
 import { RxCross1 } from "react-icons/rx";
 import { motion, AnimatePresence } from "framer-motion";
-import Loader from "../Loader";
 import { getImageUrl, getInitials } from "../../helper";
 import Error from "../Error";
 import BloggersSkeleton from "../Skeletons/BloggersSkeleton";
@@ -75,7 +73,6 @@ const Bloggers: React.FC<BloggersProps> = ({
   error = null,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
   const [followedUsers, setFollowedUsers] = useState<Record<number, boolean>>(
     {},
   );
@@ -138,16 +135,6 @@ const Bloggers: React.FC<BloggersProps> = ({
     if (!b.profile?.created_at) return null;
     return new Date(b.profile.created_at).getFullYear();
   };
-  const getBioPreview = (b: Blogger) => {
-    if (!b.profile?.bio) return null;
-    return b.profile.bio.length > 80
-      ? `${b.profile.bio.substring(0, 80)}...`
-      : b.profile.bio;
-  };
-
-  const handleImageError = (id: number) => {
-    setImageErrors((prev) => ({ ...prev, [id]: true }));
-  };
 
   const clearSearch = () => setSearchTerm("");
 
@@ -169,7 +156,6 @@ const Bloggers: React.FC<BloggersProps> = ({
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      {/* Header Section */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -202,7 +188,6 @@ const Bloggers: React.FC<BloggersProps> = ({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Search + Sort Bar */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-4 mb-8 flex flex-col md:flex-row md:items-center gap-4 sticky top-20 z-10 border border-gray-100">
           <div className="flex-1 relative">
             <FiSearch
@@ -252,7 +237,6 @@ const Bloggers: React.FC<BloggersProps> = ({
           </div>
         </div>
 
-        {/* Results count */}
         {!showEmptyState && searchTerm && (
           <div className="text-sm text-gray-500 mb-5 flex items-center gap-2">
             <FiSearch size={12} />
@@ -263,7 +247,6 @@ const Bloggers: React.FC<BloggersProps> = ({
           </div>
         )}
 
-        {/* Cards Grid */}
         {showEmptyState ? (
           <div className="bg-white rounded-2xl shadow-md p-16 text-center border border-gray-100">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -288,16 +271,18 @@ const Bloggers: React.FC<BloggersProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-7">
             <AnimatePresence>
               {processedBloggers.map((blogger) => {
-                const avatarUrl = getImageUrl(
-                  blogger?.profile_images?.[0]?.image,
+                const currentProfile = blogger?.profile_images.find(
+                  (img: { is_current: boolean }) => img.is_current,
                 );
+                const profilePath =
+                  currentProfile?.image || blogger?.profile_images[0]?.image;
+                const avatarUrl = getImageUrl(profilePath);
                 const name = getDisplayName(blogger);
                 const location = getLocation(blogger);
                 const followerCount = getFollowerCount(blogger);
                 const isFollowed = followedUsers[blogger.id] || false;
                 const initials = getInitials(name);
                 const joinYear = getJoinYear(blogger);
-                const bioPreview = getBioPreview(blogger);
 
                 return (
                   <motion.div
@@ -318,7 +303,6 @@ const Bloggers: React.FC<BloggersProps> = ({
                             src={avatarUrl}
                             alt={name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={() => handleImageError(blogger.id)}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -327,7 +311,6 @@ const Bloggers: React.FC<BloggersProps> = ({
                             </div>
                           </div>
                         )}
-                        {/* Follower Badge Overlay */}
                         <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-md rounded-full px-2.5 py-1 flex items-center gap-1.5 text-white text-xs font-medium">
                           <FiUsers size={10} />
                           <span>{followerCount}</span>
@@ -335,7 +318,6 @@ const Bloggers: React.FC<BloggersProps> = ({
                       </div>
                     </Link>
 
-                    {/* Content Section */}
                     <div className="p-5 flex flex-col flex-1">
                       <div className="text-center">
                         <Link to={`/bloggers/${blogger.id}`}>
@@ -348,14 +330,6 @@ const Bloggers: React.FC<BloggersProps> = ({
                         </p>
                       </div>
 
-                      {/* Bio Preview */}
-                      {bioPreview && (
-                        <p className="text-gray-500 text-xs text-center mt-3 line-clamp-2 leading-relaxed">
-                          {bioPreview}
-                        </p>
-                      )}
-
-                      {/* Details Row */}
                       <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-4 text-xs text-gray-400">
                         {location && (
                           <span className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-full">

@@ -7,8 +7,8 @@ import {
   startTokenRefreshTimer,
   stopTokenRefreshTimer,
 } from "../features/auth/authPersist";
-import Navbar from "../components/Navbar";
-import Footer from "../components/footer";
+import Navbar from "../components/layouts/Header";
+import Footer from "../components/layouts/footer";
 import Loader from "../components/Loader";
 import { useGetMeQuery } from "../features/profile/profileApi";
 import { setUserData } from "../features/auth/authSlice";
@@ -20,6 +20,7 @@ import BlogDetails from "../pages/Blog/BlogDetails";
 import ScrollToTop from "../components/ScrollToTop";
 
 import EditBlogPost from "../pages/Blog/EditBlogPage";
+import Notification from "../pages/Notification";
 
 // Lazy load all page components
 const Register = lazy(() => import("../pages/auth/Register"));
@@ -63,6 +64,9 @@ const Index = () => {
   useEffect(() => {
     dispatch(setUserData(data));
   }, [dispatch, data]);
+
+  const hideFooterRoutes = ["/notifications"];
+  const hideFooter = hideFooterRoutes.includes(location.pathname);
   return (
     <Router>
       <Navbar />
@@ -78,6 +82,7 @@ const Index = () => {
           <Route path="/bloggers" element={<BloggersPage />} />
           <Route path="/bloggers/:id" element={<AuthorProfile />} />
           <Route path="/blog/details/:slug" element={<BlogDetails />} />
+
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<UserProfile />}>
               <Route path="edit" element={<UserProfileEdit />} />
@@ -85,10 +90,11 @@ const Index = () => {
             <Route path="/blogs/edit/:slug" element={<EditBlogPost />} />
             <Route path="/blogs/create" element={<CreateBlogPage />} />
             <Route path="/my-blogs" element={<MyBlog />} />
+            <Route path="/notifications" element={<Notification />} />
           </Route>
         </Routes>
       </Suspense>
-      <Footer />
+      {!hideFooter && <Footer />}
     </Router>
   );
 };

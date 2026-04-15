@@ -1,7 +1,7 @@
 import React, { useState, memo, useRef, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import { useUploadProfileImageMutation } from "../../features/profile/profileApi";
-import { showSuccessToast } from "../../utils/showSuccessToast";
+import { useUploadProfileImageMutation } from "../../../features/profile/profileApi";
+import { showSuccessToast } from "../../../utils/showSuccessToast";
 import { FaRegImage, FaUpload } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import { MdOutlineClose } from "react-icons/md";

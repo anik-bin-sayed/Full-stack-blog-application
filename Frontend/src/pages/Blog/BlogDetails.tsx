@@ -27,6 +27,8 @@ import { showErrorToast } from "../../utils/showErrorToast";
 import Comments from "../../components/Comments/index.tsx";
 import CommentsWrapper from "../../components/Comments/CommentsWrapper.tsx";
 
+import defaultProfileImaeg from "../../assets/default_profile_image.png";
+
 const BlogDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -148,9 +150,11 @@ const BlogDetails: React.FC = () => {
     (img: any) => img.is_current,
   )?.image;
   const image = getImageUrl(blog?.image) || default_blog_image;
-  const profileImage = getImageUrl(currentAvatar);
+  const profileImage = getImageUrl(currentAvatar) || defaultProfileImaeg;
+
   const isOwnPost = blog?.author?.id === user?.id;
   const authorId = blog?.author?.id;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50/30 py-8 px-4 sm:px-6 lg:px-8">
       <div className="fixed left-4 top-1/2 transform -translate-y-1/2 hidden lg:flex flex-col gap-3 z-20">
@@ -291,7 +295,6 @@ const BlogDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Blog Content (HTML) */}
           <div className="no-copy px-6 sm:px-8 md:px-10 prose prose-lg prose-indigo max-w-none">
             <div
               dangerouslySetInnerHTML={{ __html: blog.content }}
@@ -299,7 +302,6 @@ const BlogDetails: React.FC = () => {
             />
           </div>
 
-          {/* Tags */}
           {blog.tags && blog.tags.length > 0 && (
             <div className="px-6 sm:px-8 md:px-10 py-4 flex flex-wrap gap-2 border-t border-gray-100 mt-6">
               <TagIcon className="w-5 h-5 text-gray-400 mr-1" />

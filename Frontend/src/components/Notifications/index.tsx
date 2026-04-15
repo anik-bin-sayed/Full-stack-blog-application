@@ -6,17 +6,19 @@ import {
 } from "../../features/notifications/notificationApi";
 import NotificationElements from "./NotificationElements";
 import { showErrorToast } from "../../utils/showErrorToast";
+import { Link } from "react-router-dom";
 
 type Props = {
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const Notifications: React.FC<Props> = ({ setOpenModal }) => {
-  const { data: notifications } = useNotificationsQuery(undefined, {
+  const { data } = useNotificationsQuery(1, {
     refetchOnMountOrArgChange: true,
   });
-  const [markAllAsRead] = useMarkAllAsReadMutation();
 
+  const [markAllAsRead] = useMarkAllAsReadMutation();
+  const notifications = data?.results;
   const unreadCount = notifications?.filter(
     (item) => item.is_read === false,
   ).length;
@@ -85,6 +87,17 @@ const Notifications: React.FC<Props> = ({ setOpenModal }) => {
             })
           )}
         </div>
+        {data?.count > 15 && (
+          <div className="w-full shadow-md py-2 flex justify-center">
+            <Link
+              to="/notifications"
+              onClick={() => setOpenModal(false)}
+              className="text-sm hover:underline text-indigo-600 font-medium"
+            >
+              Show all Notifications
+            </Link>
+          </div>
+        )}
       </div>
 
       <style>{`

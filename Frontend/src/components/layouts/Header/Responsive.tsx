@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { useLogoutUserMutation } from "../../features/auth/authApi";
+import { useLogoutUserMutation } from "../../../features/auth/authApi";
 import { navLinks } from "./navbarUtils";
 import {
   FiLogOut,
@@ -9,8 +9,8 @@ import {
   FiBookOpen,
   FiX,
 } from "react-icons/fi";
-import { showSuccessToast } from "../../utils/showSuccessToast";
-import { getImageUrl } from "../../helper";
+import { showSuccessToast } from "../../../utils/showSuccessToast";
+import { getImageUrl } from "../../../helper";
 import NotificationButton from "../NotificationButton";
 
 interface ResponsiveProps {
