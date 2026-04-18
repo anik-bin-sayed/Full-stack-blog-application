@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useAppSelector } from "../../../redux/hooks";
 import { HiMenu, HiX } from "react-icons/hi";
@@ -15,25 +15,12 @@ import NotificationButton from "../NotificationButton";
 
 const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
-  const { data: user } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+  const { data: user, isLoading: GettingUser } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [openModal, setOpenModal] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -74,14 +61,14 @@ const Navbar: React.FC = () => {
     return "User";
   };
 
-  if (isLoading) return <Loader />;
+  if (isLoading || GettingUser) return <Loader />;
 
   return (
     <>
       <nav className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Logo />
+            <Logo className="text-black" />
 
             <div className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
@@ -89,9 +76,9 @@ const Navbar: React.FC = () => {
                   key={link.name}
                   to={link.path}
                   className={({ isActive }) =>
-                    `text-gray-700 hover:text-indigo-600 transition duration-200 font-medium ${
+                    `text-gray-700 hover:text-amber-600 transition duration-200 font-medium ${
                       isActive
-                        ? "text-indigo-600 border-b-2 border-indigo-600"
+                        ? "text-amber-600 border-b-2 border-amber-600"
                         : ""
                     }`
                   }

@@ -79,9 +79,7 @@ const NotificationElements: React.FC<NotificationProps> = ({
     (img: { is_current: boolean }) => img.is_current,
   );
 
-  const profilePath = currentProfile?.image;
-
-  const avatar = getImageUrl(profilePath);
+  const avatar = getImageUrl(currentProfile?.image);
 
   const blogSlug = blog_data?.slug;
 

@@ -226,6 +226,15 @@ export const blogDataApi = createApi({
       }),
       invalidatesTags: ["blog"],
     }),
+
+    generateBlog: builder.mutation<any, { topic: string }>({
+      query: ({ topic }) => ({
+        url: `/blog/generate/`,
+        method: "POST",
+        body: { topic },
+      }),
+      invalidatesTags: ["blog"],
+    }),
   }),
 });
 
@@ -255,4 +264,7 @@ export const {
   useGetCommentQuery,
   useDeleteCommentMutation,
   useUpdateCommentMutation,
+
+  // blog generate
+  useGenerateBlogMutation,
 } = blogDataApi;

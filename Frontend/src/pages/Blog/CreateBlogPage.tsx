@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   useCreateBlogMutation,
   useGetCategoriesQuery,
@@ -6,6 +6,10 @@ import {
 import CreateCategoryModal from "../../components/category/CreateCategory";
 import { showErrorToast } from "../../utils/showErrorToast";
 import { showSuccessToast } from "../../utils/showSuccessToast";
+import BlogGenerator from "../../components/common/Modals/BlogGenerator";
+import { FaAirbnb } from "react-icons/fa";
+import { useAppSelector } from "../../redux/hooks";
+import { setBlogData } from "../../features/blogs/blogSlice";
 
 interface Category {
   id: number;
@@ -31,12 +35,32 @@ const initialState: BlogFormState = {
 };
 
 const CreateBlogPage: React.FC = () => {
+  const { blog } = useAppSelector((state) => state.blog);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [form, setForm] = useState<BlogFormState>(initialState);
+  const [generatedBlog, setGeneratedBlog] = useState(true);
+
+  console.log(blog?.title);
+
+  const [showPromptModal, setShowPromptModal] = useState(false);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (generatedBlog && blog) {
+      setForm({
+        title: blog.title || "",
+        excerpt: blog.excerpt || "",
+        content: blog.content || "",
+        category: form.category,
+        is_featured: form.is_featured,
+        is_publish: form.is_publish,
+      });
+      setGeneratedBlog(false);
+    }
+  }, [generatedBlog, blog]);
 
   const {
     data: categoriesData,
@@ -46,6 +70,10 @@ const CreateBlogPage: React.FC = () => {
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
 
   const categories = categoriesData || [];
+
+  const handleOpenPromptModal = () => {
+    setShowPromptModal(true);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -105,38 +133,57 @@ const CreateBlogPage: React.FC = () => {
     }
   };
 
+  const handleResetForm = () => {
+    setForm(initialState);
+    setGeneratedBlog(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl italic text-black">Create New Blog</h1>
-          <p
-            className="text-gray-600 mt-2"
-            style={{ fontFamily: "Dancing Script, cursive" }}
-          >
-            Share your story with the world
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="text-center sm:text-left flex-1">
+            <h1 className="text-4xl italic text-black">Create New Blog</h1>
+            <p
+              className="text-gray-600 mt-2"
+              style={{ fontFamily: "Dancing Script, cursive" }}
+            >
+              Share your story with the world
+            </p>
+          </div>
+
+          <div className="flex justify-center sm:justify-end">
+            <button
+              type="button"
+              onClick={handleOpenPromptModal}
+              className="px-5 py-3 border border-green-500 hover:border-emerald-600 text-black  rounded-xl hover:from-green-600 hover:to-emerald-700 transition font-medium flex items-center gap-2 shadow-md cursor-pointer"
+              title="Generate blog title using AI"
+            >
+              <FaAirbnb className="text-emerald-500" />
+              <span>Generate Blog</span>
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Title */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Blog Title
               </label>
-              <input
-                type="text"
-                name="title"
-                placeholder="Enter an amazing title..."
-                value={form.title}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-                required
-              />
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Enter an amazing title..."
+                  value={form.title}
+                  onChange={handleChange}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                  required
+                />
+              </div>
             </div>
 
-            {/* Excerpt */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Short Excerpt
@@ -151,7 +198,6 @@ const CreateBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Content */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Blog Content
@@ -167,7 +213,6 @@ const CreateBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Image Upload */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Featured Image
@@ -241,7 +286,6 @@ const CreateBlogPage: React.FC = () => {
               )}
             </div>
 
-            {/* Category Selection */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Category
@@ -288,7 +332,6 @@ const CreateBlogPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Checkboxes: Is Featured & Is Published */}
             <div className="flex flex-wrap gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -316,14 +359,23 @@ const CreateBlogPage: React.FC = () => {
               </label>
             </div>
 
-           
-            <button
-              type="submit"
-              disabled={isCreating}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCreating ? "Publishing..." : "Publish Blog"}
-            </button>
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="submit"
+                disabled={isCreating}
+                className="w-full  bg-indigo-600  text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition transform  focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isCreating ? "Publishing..." : "Publish Blog"}
+              </button>
+              {generatedBlog && (
+                <button
+                  onClick={handleResetForm}
+                  className="w-full text-black to-purple-600 border border-green-500 hover:border-green-700 py-4 rounded-xl font-semibold text-lg  hover:to-purple-700 transition transform  focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </div>
@@ -333,6 +385,10 @@ const CreateBlogPage: React.FC = () => {
         isOpen={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
       />
+
+      {showPromptModal && (
+        <BlogGenerator setShowPromptModal={setShowPromptModal} />
+      )}
     </div>
   );
 };

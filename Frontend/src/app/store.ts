@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authApi } from "../features/auth/authApi";
 import authReducer from "../features/auth/authSlice";
+import blogReducer from "../features/blogs/blogSlice";
 import profileReducer from "../features/profile/profileSlice";
 import { profileApi } from "../features/profile/profileApi";
 import { blogDataApi } from "../features/blogs/blogApi";
@@ -14,6 +15,7 @@ export const store = configureStore({
     [notificationsApi.reducerPath]: notificationsApi.reducer,
     auth: authReducer,
     profile: profileReducer,
+    blog: blogReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

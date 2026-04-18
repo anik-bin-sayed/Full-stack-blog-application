@@ -4,7 +4,6 @@ import { useAppSelector } from "../../redux/hooks";
 import { useState } from "react";
 import { useUpdateCommentMutation } from "../../features/blogs/blogApi";
 import { showErrorToast } from "../../utils/showErrorToast";
-
 import DefaultProfileImage from "../../assets/default_profile_image.png";
 
 export type Comment = {

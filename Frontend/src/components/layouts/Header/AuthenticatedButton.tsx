@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useProfilePhotoQuery } from "../../../features/profile/profileApi";
 import { useAppSelector } from "../../../redux/hooks";
 import { useLogoutUserMutation } from "../../../features/auth/authApi";
-import default_profile_Image from "../../../assets/default_cover_image.png";
+import defaultProfileImage from "../../../assets/default_profile_image.png";
 import { showSuccessToast } from "../../../utils/showSuccessToast";
 import { logout } from "../../../features/auth/authSlice";
 import { useDispatch } from "react-redux";
@@ -26,7 +26,7 @@ const AuthenticatedButton = () => {
 
   const fullname = user?.profile?.fullname;
   const email = user?.email;
-  const avatarUrl = currentProfile?.image || default_profile_Image;
+  const avatarUrl = currentProfile?.image || defaultProfileImage;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

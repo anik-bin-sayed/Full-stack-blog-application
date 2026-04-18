@@ -13,15 +13,15 @@ const Home: React.FC = () => {
         <div className="absolute inset-0" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-6xl text-black italic font-semibold mb-6 animate-fadeInUp">
-              Welcome to PostVerse
+            <h1 className="text-4xl md:text-6xl text-black font-semibold mb-6 animate-fadeInUp">
+              Discover Stories That Shape the Future
             </h1>
             <p
               className="text-lg md:text-xl text-black mb-8 animate-fadeInUp animation-delay-200"
               style={{ fontFamily: "Dancing Script, cursive" }}
             >
-              Discover inspiring stories, expert insights, and the latest trends
-              in tech, design, and development.
+              Learn, explore, and stay ahead with expert insights in tech and
+              design. CTA: Start Reading
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp animation-delay-400">
               <Link
@@ -35,7 +35,6 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* Wave SVG at bottom */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg
             viewBox="0 0 1440 120"
@@ -74,8 +73,6 @@ const Home: React.FC = () => {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
     </div>
   );
 };

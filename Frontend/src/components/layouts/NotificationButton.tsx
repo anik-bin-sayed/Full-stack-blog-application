@@ -11,11 +11,14 @@ const NotificationButton = ({
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { data } = useNotificationsQuery(undefined, {
     refetchOnMountOrArgChange: true,
+    pollingInterval: 10000,
   });
   const notifications = data?.results;
   const unreadCount = notifications?.filter(
     (item) => item?.is_read === false,
   ).length;
+
+  console.log(unreadCount);
 
   return (
     <div>

@@ -15,9 +15,11 @@ type Props = {
 const Notifications: React.FC<Props> = ({ setOpenModal }) => {
   const { data } = useNotificationsQuery(1, {
     refetchOnMountOrArgChange: true,
+    pollingInterval: 10000,
   });
 
   const [markAllAsRead] = useMarkAllAsReadMutation();
+
   const notifications = data?.results;
   const unreadCount = notifications?.filter(
     (item) => item.is_read === false,

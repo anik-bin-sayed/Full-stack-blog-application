@@ -16,6 +16,8 @@ import { MdOutlineWatchLater } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 import { CiCirclePlus } from "react-icons/ci";
 
+import defaultProfileImage from "../../../assets/default_profile_image.png";
+
 const MyDraftBlog = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -220,9 +222,12 @@ const MyDraftBlog = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {drafts.map((blog: any) => {
           const image = getImageUrl(blog.image);
-          const userImage = getImageUrl(
-            blog.author?.profile_images?.[0]?.image,
+
+          const currentProfile = blog?.author?.profile_images.find(
+            (img: { is_current: boolean }) => img.is_current,
           );
+          const userImage =
+            getImageUrl(currentProfile?.image) || defaultProfileImage;
           const authorName =
             blog.author?.profile?.fullname ||
             blog.author?.username ||
