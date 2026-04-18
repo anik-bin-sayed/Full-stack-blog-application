@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
-from .utils import CustomPagination, CommentPagination
+from .utils import CustomPagination, CommentPagination, ai_blog_generator
 from .permissions import IsOwner
 
 from notifications.models import Notification
@@ -101,7 +101,17 @@ class CreateBlog(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save()
+        image = self.request.FILES.get("image")
+
+        if image:
+            result = cloudinary.uploader.upload(image)
+
+            serializer.save(
+                image=result.get("secure_url"),
+                image_public_id=result.get("public_id"),
+            )
+        else:
+            serializer.save()
 
 
 class UpdateApiView(APIView):
@@ -244,6 +254,8 @@ class DeleteBlogView(APIView):
                     {"error": "You are not allowed to delete this blog"},
                     status=status.HTTP_403_FORBIDDEN,
                 )
+
+            print(blog)
 
             blog.delete()
             cloudinary.uploader.destroy(blog.image_public_id)
@@ -470,3 +482,17 @@ class UpdateCommentAPIView(APIView):
                 "created_at": comment.created_at,
             }
         )
+
+
+class GenerateBlogAPIView(APIView):
+    def post(self, request):
+        serializer = BlogGenerateSerializer(data=request.data)
+
+        if serializer.is_valid():
+            topic = serializer.validated_data["topic"]
+
+            ai_data = ai_blog_generator.generate_blog_from_ai(topic)
+
+            return Response(ai_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

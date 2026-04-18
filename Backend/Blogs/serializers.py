@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from userProfile.models import UserProfile, ProfileImage
-from userProfile.serializers import UserDetailSerializer, FollowSerializer
 
+from userProfile.serializers import UserDetailSerializer, FollowSerializer
 from .models import *
 from .utils import generate_unique_slug
 
@@ -18,7 +17,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class BlogListSerializer(serializers.ModelSerializer):
     author = UserDetailSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
+    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     likes_count = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
@@ -28,6 +29,7 @@ class BlogListSerializer(serializers.ModelSerializer):
             "slug",
             "content",
             "image",
+            "tags",
             "author",
             "is_publish",
             "is_featured",
@@ -39,16 +41,36 @@ class BlogListSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.count()
 
+    def get_image(self, obj):
+        return obj.image.url if obj.image else None
+
 
 class BlogDetailSerializer(serializers.ModelSerializer):
     author = UserDetailSerializer(read_only=True)
     category = CategorySerializer(read_only=True)
-    # comments = serializers.SerializerMethodField()
+    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     likes_count = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
 
     class Meta:
         model = Blog
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "excerpt",
+            "content",
+            "image",
+            "tags",
+            "author",
+            "category",
+            "is_featured",
+            "is_publish",
+            "created_at",
+            "likes_count",
+            "comments",
+        ]
 
     def get_comments(self, obj):
         comments = obj.comments.all().order_by("-created_at")
@@ -57,15 +79,24 @@ class BlogDetailSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.count()
 
+    def get_image(self, obj):
+        return obj.image.url if obj.image else None
+
 
 class BlogCreateSerializer(serializers.ModelSerializer):
+    tags = serializers.ListField(
+        child=serializers.CharField(), required=False, write_only=True
+    )
+
     class Meta:
         model = Blog
         fields = [
+            "id",
             "title",
             "slug",
             "excerpt",
             "content",
+            "tags",
             "image",
             "category",
             "is_featured",
@@ -76,11 +107,29 @@ class BlogCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
 
-        title = validated_data.get("title")
+        tags_data = validated_data.pop("tags", [])
 
+        title = validated_data.get("title") or ""
         validated_data["slug"] = generate_unique_slug(title)
 
-        return Blog.objects.create(author=user, **validated_data)
+        blog = Blog.objects.create(author=user, **validated_data)
+
+        if tags_data:
+            tag_objects = []
+            for name in tags_data:
+                name = name.strip().lower()
+                if name:
+                    tag, _ = Tag.objects.get_or_create(name=name)
+                    tag_objects.append(tag)
+
+            blog.tags.set(tag_objects)
+
+        return blog
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["tags"] = [tag.name for tag in instance.tags.all()]
+        return representation
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -97,7 +146,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
-    parent_id = serializers.IntegerField(required=False)
+    parent_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Comment
@@ -111,7 +160,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
         parent = None
         if parent_id:
-            parent = Comment.objects.get(id=parent_id)
+            parent = Comment.objects.filter(id=parent_id).first()
 
         return Comment.objects.create(
             user=user, blog=blog, parent=parent, **validated_data
@@ -161,3 +210,7 @@ class BlogMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = ["id", "title", "slug"]
+
+
+class BlogGenerateSerializer(serializers.Serializer):
+    topic = serializers.CharField()

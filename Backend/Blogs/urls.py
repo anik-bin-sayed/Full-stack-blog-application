@@ -57,4 +57,6 @@ urlpatterns = [
         UpdateCommentAPIView.as_view(),
         name="update-comment",
     ),
+    #  generate blog
+    path("generate/", GenerateBlogAPIView.as_view(), name="generate-blog"),
 ]
