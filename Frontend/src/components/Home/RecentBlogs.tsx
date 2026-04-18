@@ -47,7 +47,6 @@ const RecentBlogs = () => {
       <div className="space-y-8">
         {recentBlogs &&
           recentBlogs.map((post) => {
-            const image = getImageUrl(post.image);
             const date = formatDate(post?.created_at);
             const authorName =
               post.author?.profile?.fullname ||
@@ -67,7 +66,7 @@ const RecentBlogs = () => {
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                   <img
-                    src={image || ""}
+                    src={post.image || ""}
                     alt={post.title}
                     className="w-full h-48 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

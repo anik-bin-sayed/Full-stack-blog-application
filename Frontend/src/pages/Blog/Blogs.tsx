@@ -172,7 +172,6 @@ const Blogs: React.FC = () => {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {allPosts.map((post: any) => {
-                    const thumbnailImage = getImageUrl(post.image);
                     return (
                       <article
                         key={post.id}
@@ -183,7 +182,7 @@ const Blogs: React.FC = () => {
                           className="block overflow-hidden"
                         >
                           <img
-                            src={thumbnailImage}
+                            src={post.image || ""}
                             alt={post.title}
                             className="h-44 w-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />

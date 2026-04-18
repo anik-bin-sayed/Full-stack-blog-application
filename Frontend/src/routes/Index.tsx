@@ -65,7 +65,7 @@ const Index = () => {
     dispatch(setUserData(data));
   }, [dispatch, data]);
 
-  const hideFooterRoutes = ["/notifications"];
+  const hideFooterRoutes = ["/notifications", "/blogs/create"];
   const hideFooter = hideFooterRoutes.includes(location.pathname);
   return (
     <Router>

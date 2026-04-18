@@ -189,7 +189,6 @@ const FeatureBlogs = () => {
         >
           {featureBlogs.map((post) => {
             const date = formatDate(post?.created_at);
-            const image = getImageUrl(post.image);
             const categoryColor = getCategoryColor(post.category?.name);
             const contentPreview = getContentPreview(post);
 
@@ -207,7 +206,7 @@ const FeatureBlogs = () => {
               >
                 <Link to={`/blog/details/${post.slug}`} className="block">
                   <img
-                    src={image}
+                    src={post.image}
                     alt={post.title}
                     className="w-full h-48 object-cover"
                   />

@@ -18,8 +18,6 @@ const NotificationButton = ({
     (item) => item?.is_read === false,
   ).length;
 
-  console.log(unreadCount);
-
   return (
     <div>
       {isAuthenticated && (
