@@ -1,43 +1,75 @@
-import React from "react";
+import { useMemo } from "react";
 import { FiCalendar, FiUser, FiClock, FiArrowRight } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { getImageUrl, formatDate } from "../../helper";
+import { formatDate } from "../../helper";
 import { usePublicRecentBlogsQuery } from "../../features/blogs/blogApi";
+
+type AuthorProfile = {
+  fullname?: string;
+  username?: string;
+};
+
+type Author = {
+  id: number;
+  username: string;
+  profile?: AuthorProfile;
+};
+
+type Blog = {
+  id: number;
+  slug: string;
+  authorName: string;
+  title: string;
+  readingTime: number;
+  content?: string;
+  body?: string;
+  excerpt?: string;
+  image?: string;
+  created_at: string;
+  author?: Author;
+  preview?: string;
+};
+
+const stripHtml = (html: string) => {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "");
+};
 
 const RecentBlogs = () => {
   const { data: recentBlogs, isLoading } = usePublicRecentBlogsQuery();
 
-  const getPlainText = (html: string) => {
-    if (!html) return "";
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-    return tempDiv.textContent || tempDiv.innerText || "";
-  };
+  const processedBlogs = useMemo(() => {
+    if (!recentBlogs) return [];
 
-  const getContentPreview = (post: any) => {
-    const rawContent = post.content || post.body || post.excerpt || "";
-    const plainText = getPlainText(rawContent);
-    const words = plainText.split(/\s+/).filter((w) => w.length > 0);
-    const previewWords = words.slice(0, 25);
-    let preview = previewWords.join(" ");
-    if (words.length > 25) preview += "...";
-    return preview || "No preview available";
-  };
+    return recentBlogs.map((post: Blog) => {
+      const rawText = post.content || post.body || post.excerpt || "";
+      const text = stripHtml(rawText);
 
-  const getReadingTime = (content: string) => {
-    const plainText = getPlainText(content);
-    const wordsPerMinute = 200;
-    const wordCount = plainText.split(/\s+/).filter((w) => w.length > 0).length;
-    const minutes = Math.ceil(wordCount / wordsPerMinute);
-    return minutes > 0 ? minutes : 1;
-  };
+      const words = text.split(/\s+/).filter(Boolean);
+
+      let preview = words.slice(0, 25).join(" ");
+      if (words.length > 25) preview += "...";
+
+      const readingTime = Math.max(1, Math.ceil(words.length / 200));
+
+      return {
+        ...post,
+        preview,
+        readingTime,
+        authorName:
+          post.author?.profile?.fullname ||
+          post.author?.username ||
+          "Anonymous",
+      };
+    });
+  }, [recentBlogs]);
 
   return (
     <div className="lg:w-2/3">
       <div className="mb-8">
         <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 inline-block relative">
           Recent Posts
-          <span className="absolute bottom-0 left-0 w-1/2 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mt-1"></span>
+          <span className="absolute bottom-0 left-0 w-1/2 h-1 bg-linear-to-r from-indigo-500 to-purple-500 rounded-full mt-1"></span>
         </h2>
         <p className="text-gray-500 text-sm mt-2">
           Latest stories from our blog
@@ -45,15 +77,9 @@ const RecentBlogs = () => {
       </div>
 
       <div className="space-y-8">
-        {recentBlogs &&
-          recentBlogs.map((post) => {
+        {processedBlogs &&
+          processedBlogs.map((post: Blog) => {
             const date = formatDate(post?.created_at);
-            const authorName =
-              post.author?.profile?.fullname ||
-              post.author?.username ||
-              "Anonymous";
-            const contentPreview = getContentPreview(post);
-            const readingTime = getReadingTime(post.content || post.body || "");
 
             return (
               <article
@@ -64,10 +90,15 @@ const RecentBlogs = () => {
                   to={`/blog/details/${post.slug}`}
                   className="md:w-48 lg:w-56 overflow-hidden relative block"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+                  <div className="absolute inset-0 bg-linear-to-r from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+
                   <img
                     src={post.image || ""}
                     alt={post.title}
+                    loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={300}
                     className="w-full h-48 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </Link>
@@ -79,11 +110,12 @@ const RecentBlogs = () => {
                         <FiCalendar size={12} /> {date}
                       </span>
                       <span className="flex items-center gap-1">
-                        <FiUser size={12} /> {authorName}
+                        <FiUser size={12} /> {post.authorName}
                       </span>
                     </div>
+
                     <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
-                      <FiClock size={10} /> {readingTime} min read
+                      <FiClock size={10} /> {post.readingTime} min read
                     </span>
                   </div>
 
@@ -94,7 +126,7 @@ const RecentBlogs = () => {
                   </Link>
 
                   <p className="text-gray-600 text-sm leading-relaxed mb-3 line-clamp-2">
-                    {contentPreview}
+                    {post.preview}
                   </p>
 
                   <Link
@@ -114,7 +146,7 @@ const RecentBlogs = () => {
       </div>
 
       {isLoading && (
-        <div className="space-y-6">
+        <div className="space-y-6 mt-6">
           {[1, 2, 3].map((i) => (
             <div
               key={i}

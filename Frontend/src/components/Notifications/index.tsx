@@ -7,13 +7,17 @@ import {
 import NotificationElements from "./NotificationElements";
 import { showErrorToast } from "../../utils/showErrorToast";
 import { Link } from "react-router-dom";
+import { useAppSelector } from "../../redux/hooks";
 
 type Props = {
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const Notifications: React.FC<Props> = ({ setOpenModal }) => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
   const { data } = useNotificationsQuery(1, {
+    skip: !isAuthenticated,
     refetchOnMountOrArgChange: true,
     pollingInterval: 10000,
   });
@@ -44,7 +48,7 @@ const Notifications: React.FC<Props> = ({ setOpenModal }) => {
         aria-modal="true"
         aria-label="Notifications"
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-linear-to-r from-indigo-50 to-purple-50">
           <div className="flex items-center gap-2">
             <IoNotificationsOutline className="w-5 h-5 text-indigo-500" />
             <h2 className="text-lg font-semibold text-gray-800">
@@ -89,7 +93,7 @@ const Notifications: React.FC<Props> = ({ setOpenModal }) => {
             })
           )}
         </div>
-        {data?.count > 15 && (
+        {data && data?.count > 15 && (
           <div className="w-full shadow-md py-2 flex justify-center">
             <Link
               to="/notifications"

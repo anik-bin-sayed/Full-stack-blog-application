@@ -11,6 +11,7 @@ import { FaComment, FaHeart, FaUserPlus } from "react-icons/fa";
 import { IoNotificationsOutline } from "react-icons/io5";
 import type { Notification as NotificationType } from "../../types/NotificationType";
 import { showErrorToast } from "../../utils/showErrorToast";
+import { useAppSelector } from "../../redux/hooks";
 
 const getIcon = (type: string) => {
   switch (type) {
@@ -26,6 +27,7 @@ const getIcon = (type: string) => {
 };
 
 const NotificationsPage = () => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [page, setPage] = useState(1);
   const [allNotifications, setAllNotifications] = useState<NotificationType[]>(
     [],
@@ -33,7 +35,10 @@ const NotificationsPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
-  const { data, isLoading, isFetching, refetch } = useNotificationsQuery(page);
+  const { data, isLoading, isFetching, refetch } = useNotificationsQuery(page, {
+    skip: !isAuthenticated,
+  });
+
   const [markAsRead] = useMarkAsReadMutation();
   const [markAllAsRead] = useMarkAllAsReadMutation();
   const [deleteAllNotifications, { isLoading: deleting }] =

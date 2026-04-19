@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, memo } from "react";
 import {
   FiArrowRight,
   FiCalendar,
@@ -9,11 +9,10 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { usePublicFeatureBlogsQuery } from "../../features/blogs/blogApi";
-import { formatDate, getImageUrl } from "../../helper";
+import { formatDate } from "../../helper";
 
 const FeatureBlogs = () => {
-  const { data: featureBlogs, isLoading: featureBlogLoading } =
-    usePublicFeatureBlogsQuery();
+  const { data: featureBlogs, isLoading } = usePublicFeatureBlogsQuery();
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -21,44 +20,67 @@ const FeatureBlogs = () => {
 
   const needCarousel = featureBlogs && featureBlogs.length > 3;
 
+  // 🚀 FAST SCROLL CHECK (no ResizeObserver)
   const checkScrollButtons = useCallback(() => {
     if (!carouselRef.current || !needCarousel) return;
+
     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+
     setCanScrollLeft(scrollLeft > 5);
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
   }, [needCarousel]);
 
+  // throttle scroll handler
+  const throttle = (fn: Function, delay: number) => {
+    let last = 0;
+    return (...args: any[]) => {
+      const now = Date.now();
+      if (now - last > delay) {
+        last = now;
+        fn(...args);
+      }
+    };
+  };
+
+  const handleScroll = throttle(checkScrollButtons, 200);
+
   useEffect(() => {
     const container = carouselRef.current;
-    if (container && needCarousel) {
-      const timer = setTimeout(checkScrollButtons, 100);
-      container.addEventListener("scroll", checkScrollButtons);
-      window.addEventListener("resize", checkScrollButtons);
-      const observer = new ResizeObserver(checkScrollButtons);
-      observer.observe(container);
-      return () => {
-        clearTimeout(timer);
-        container.removeEventListener("scroll", checkScrollButtons);
-        window.removeEventListener("resize", checkScrollButtons);
-        observer.disconnect();
-      };
-    }
-  }, [needCarousel, checkScrollButtons]);
+    if (!container || !needCarousel) return;
+
+    checkScrollButtons();
+
+    container.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", checkScrollButtons);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", checkScrollButtons);
+    };
+  }, [needCarousel, handleScroll, checkScrollButtons]);
 
   const scrollLeft = () => {
-    if (carouselRef.current) {
-      const container = carouselRef.current;
-      const scrollAmount = container.clientWidth * 0.9;
-      container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-    }
+    carouselRef.current?.scrollBy({
+      left: -carouselRef.current.clientWidth * 0.7,
+      behavior: "smooth",
+    });
   };
 
   const scrollRight = () => {
-    if (carouselRef.current) {
-      const container = carouselRef.current;
-      const scrollAmount = container.clientWidth * 0.9;
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
+    carouselRef.current?.scrollBy({
+      left: carouselRef.current.clientWidth * 0.7,
+      behavior: "smooth",
+    });
+  };
+
+  const getContentPreview = (post: any) => {
+    const text = (post.content || post.body || post.excerpt || "")
+      .replace(/<[^>]*>/g, "")
+      .split(/\s+/)
+      .slice(0, 25)
+      .join(" ");
+
+    return text + (text.length > 120 ? "..." : "") || "Read more";
   };
 
   const getCategoryColor = (categoryName: string) => {
@@ -73,153 +95,90 @@ const FeatureBlogs = () => {
     return colors[categoryName] || "bg-gray-50 text-gray-700";
   };
 
-  const getPlainText = (html: string) => {
-    if (!html) return "";
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-    return tempDiv.textContent || tempDiv.innerText || "";
-  };
-
-  const getContentPreview = (post: any) => {
-    const rawContent = post.content || post.body || post.excerpt || "";
-    const plainText = getPlainText(rawContent);
-    const words = plainText.split(/\s+/).filter((w) => w.length > 0);
-    const previewWords = words.slice(0, 25);
-    let preview = previewWords.join(" ");
-    if (words.length > 25) preview += "...";
-    return preview || "Read more";
-  };
-
-  if (featureBlogLoading) {
+  if (isLoading) {
     return (
-      <div className="py-12">
-        <div className="text-center mb-10">
-          <div className="h-8 w-48 bg-gray-200 rounded mx-auto" />
-          <div className="w-16 h-0.5 bg-gray-200 mx-auto mt-3 rounded-full" />
-          <div className="h-4 w-64 bg-gray-200 rounded mx-auto mt-3" />
-        </div>
-        <div className="flex justify-center px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse"
-              >
-                <div className="h-48 bg-gray-200" />
-                <div className="p-5 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-5 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-full" />
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
-                  <div className="flex justify-between items-center pt-2">
-                    <div className="h-6 bg-gray-200 rounded w-16" />
-                    <div className="h-4 bg-gray-200 rounded w-20" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="py-12 text-center text-gray-500">
+        Loading featured blogs...
       </div>
     );
   }
 
-  if (!featureBlogs || featureBlogs.length === 0) {
-    return null;
-  }
+  if (!featureBlogs || featureBlogs.length === 0) return null;
+
+  const visibleBlogs = featureBlogs.slice(0, 6);
 
   return (
     <div className="py-12">
+      {/* Header */}
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold text-gray-900">Featured Articles</h2>
-        <div className="w-16 h-0.5 bg-indigo-500 mx-auto mt-3 rounded-full" />
-        <p className="text-gray-500 mt-3 max-w-md mx-auto">
+        <div className="w-14 h-0.5 bg-indigo-500 mx-auto mt-3 rounded-full" />
+        <p className="text-gray-500 mt-3">
           Hand-picked stories to inspire and educate
         </p>
       </div>
 
+      {/* Carousel Wrapper */}
       <div className="relative px-4 md:px-8">
+        {/* Buttons */}
         {needCarousel && (
           <>
             <button
               onClick={scrollLeft}
               disabled={!canScrollLeft}
-              className={`absolute left-2 md:left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md border border-gray-200 transition-all ${
-                canScrollLeft
-                  ? "hover:bg-gray-50 hover:shadow-lg cursor-pointer"
-                  : "opacity-30 cursor-not-allowed"
-              }`}
-              aria-label="Previous"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow border disabled:opacity-30"
             >
               <FiChevronLeft size={20} />
             </button>
+
             <button
               onClick={scrollRight}
               disabled={!canScrollRight}
-              className={`absolute right-2 md:right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md border border-gray-200 transition-all ${
-                canScrollRight
-                  ? "hover:bg-gray-50 hover:shadow-lg cursor-pointer"
-                  : "opacity-30 cursor-not-allowed"
-              }`}
-              aria-label="Next"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow border disabled:opacity-30"
             >
               <FiChevronRight size={20} />
             </button>
           </>
         )}
 
+        {/* Cards */}
         <div
           ref={carouselRef}
-          className={`
-            ${
-              needCarousel
-                ? "flex overflow-x-auto scroll-smooth snap-x snap-mandatory gap-5 pb-4"
-                : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-            }
-          `}
-          style={
+          className={
             needCarousel
-              ? {
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                  WebkitOverflowScrolling: "touch",
-                }
-              : {}
+              ? "flex overflow-x-auto gap-5 scroll-smooth pb-4"
+              : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           }
         >
-          {featureBlogs.map((post) => {
-            const date = formatDate(post?.created_at);
-            const categoryColor = getCategoryColor(post.category?.name);
+          {visibleBlogs.map((post) => {
+            const date = formatDate(post.created_at);
             const contentPreview = getContentPreview(post);
 
             return (
               <article
                 key={post.id}
-                className={`
-                  flex-shrink-0 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col
-                  ${
-                    needCarousel
-                      ? "snap-start w-[85vw] sm:w-[calc(50%-20px)] lg:w-[calc(33.33%-20px)]"
-                      : "w-full"
-                  }
-                `}
+                className="bg-white rounded-xl border shadow-sm overflow-hidden shrink-0"
               >
-                <Link to={`/blog/details/${post.slug}`} className="block">
+                {/* Image */}
+                <Link to={`/blog/details/${post.slug}`}>
                   <img
                     src={post.image}
                     alt={post.title}
+                    loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={250}
                     className="w-full h-48 object-cover"
                   />
                 </Link>
 
-                <div className="p-5 flex flex-col flex-grow">
-                  {/* Meta */}
-                  <div className="flex items-center text-xs text-gray-500 mb-2 space-x-3">
+                <div className="p-5 flex flex-col">
+                  <div className="flex text-xs text-gray-500 gap-3 mb-2">
                     <span className="flex items-center gap-1">
                       <FiCalendar size={12} /> {date}
                     </span>
                     <span className="flex items-center gap-1">
-                      <FiUser size={12} />{" "}
+                      <FiUser size={12} />
                       {post.author?.profile?.fullname ||
                         post.author?.username ||
                         "Anonymous"}
@@ -227,28 +186,32 @@ const FeatureBlogs = () => {
                   </div>
 
                   <Link to={`/blog/details/${post.slug}`}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-indigo-600 transition">
+                    <h3 className="text-lg font-semibold hover:text-indigo-600 line-clamp-2">
                       {post.title}
                     </h3>
                   </Link>
 
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3 flex-grow">
+                  {/* Content */}
+                  <p className="text-sm text-gray-600 mt-2 line-clamp-3">
                     {contentPreview}
                   </p>
 
-                  <div className="flex items-center justify-between mt-2">
+                  {/* Footer */}
+                  <div className="flex justify-between items-center mt-4">
                     <span
-                      className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-full ${categoryColor}`}
+                      className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(
+                        post.category?.name,
+                      )}`}
                     >
-                      <FiTag className="mr-1" size={12} />
+                      <FiTag className="inline mr-1" size={12} />
                       {post.category?.name || "General"}
                     </span>
+
                     <Link
                       to={`/blog/details/${post.slug}`}
-                      className="text-indigo-600 text-sm font-medium hover:text-indigo-800 transition flex items-center gap-1"
+                      className="text-indigo-600 text-sm flex items-center gap-1"
                     >
-                      Read more
-                      <FiArrowRight size={14} />
+                      Read more <FiArrowRight size={14} />
                     </Link>
                   </div>
                 </div>
@@ -261,4 +224,4 @@ const FeatureBlogs = () => {
   );
 };
 
-export default FeatureBlogs;
+export default memo(FeatureBlogs);

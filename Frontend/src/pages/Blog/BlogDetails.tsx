@@ -32,7 +32,6 @@ import defaultProfileImage from "../../assets/default_profile_image.png";
 const BlogDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
-  const [copied, setCopied] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [readingProgress, setReadingProgress] = useState(0);
 
@@ -103,13 +102,11 @@ const BlogDetails: React.FC = () => {
       try {
         await navigator.share({ title: blog?.title, text: blog?.excerpt, url });
       } catch (err) {
-        console.log("Share cancelled");
+        showErrorToast(err);
       }
     } else {
       navigator.clipboard.writeText(url);
-      setCopied(true);
       toast.success("Link copied to clipboard!");
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -144,7 +141,7 @@ const BlogDetails: React.FC = () => {
   };
 
   const currentAvatar = blog.author?.profile_images?.find(
-    (img: any) => img.is_current,
+    (img: { is_current: boolean }) => img.is_current,
   )?.image;
   const profileImage = getImageUrl(currentAvatar) || defaultProfileImage;
   const isOwnPost = blog?.author?.id === user?.id;
@@ -159,7 +156,7 @@ const BlogDetails: React.FC = () => {
         />
       </div>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/40">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50/40">
         <div className="fixed left-6 top-1/2 transform -translate-y-1/2 hidden lg:flex flex-col gap-4 z-30">
           <button
             onClick={handleShare}
@@ -197,20 +194,23 @@ const BlogDetails: React.FC = () => {
           </Link>
         </div>
 
-        <div className="relative">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {blog.image && (
-            <div className="relative h-[50vh] min-h-[600px] overflow-hidden">
+            <div className="relative w-full border rounded shadow-md mb-8 bg-black flex justify-center items-center">
               <img
-                src={blog.image}
+                src={blog.image || default_blog_image}
                 alt={blog.title}
-                className="w-full h-full object-cover"
+                loading="lazy"
+                width={800}
+                height={400}
+                className="w-full h-auto object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
             </div>
           )}
 
           {!blog.image && (
-            <div className="bg-gradient-to-r from-indigo-900 to-purple-800 py-16 md:py-24">
+            <div className="bg-linear-to-r from-indigo-900 to-purple-800 py-16 md:py-24">
               <div className="max-w-4xl mx-auto px-4 text-white text-center">
                 <div className="flex justify-center gap-2 mb-4">
                   {blog.is_featured && (
@@ -239,7 +239,6 @@ const BlogDetails: React.FC = () => {
 
         {/* Main content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          {/* Author card */}
           <div className="bg-white rounded-2xl shadow-md p-6 mb-10 flex flex-col sm:flex-row items-center gap-6 border border-gray-100">
             <img
               src={profileImage}
@@ -323,13 +322,15 @@ const BlogDetails: React.FC = () => {
 
           <div
             ref={contentRef}
-            className="prose prose-lg prose-indigo max-w-none break-words overflow-x-auto"
+            className="prose prose-lg prose-indigo max-w-none wrap-break-word overflow-x-auto"
           >
-            <div
-              dangerouslySetInnerHTML={{ __html: blog.content }}
-              className="blog-content text-justify leading-relaxed break-words"
-              style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-            />
+            <div className="no-copy">
+              {blog.content.split("\n").map((line: string, idx: number) => (
+                <p key={idx} className="mb-4">
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
 
           {blog.tags && blog.tags.length > 0 && (

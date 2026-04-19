@@ -11,6 +11,7 @@ export interface Image {
 export interface Profile {
   bio: string;
   phone: string;
+  fullname: string;
   birthdate: string | null;
   gender: string;
   language: string;
@@ -33,6 +34,7 @@ export interface Profile {
 export interface User {
   id: number;
   username: string;
+
   email: string;
   profile: Profile;
   profile_images: Image[];
@@ -71,6 +73,7 @@ export const profileApi = createApi({
         url: `/profile/me`,
         method: "GET",
       }),
+      keepUnusedDataFor: 300,
       providesTags: ["Profile"],
     }),
 

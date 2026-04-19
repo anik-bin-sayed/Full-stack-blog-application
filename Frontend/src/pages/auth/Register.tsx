@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, useCallback } from "react";
 import SubmitButton from "../../utils/Button";
 import Input from "../../components/common/inputs/Input";
 import PasswordInput from "../../components/common/inputs/PasswordInput";
@@ -9,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { showErrorToast } from "../../utils/showErrorToast";
 import { showSuccessToast } from "../../utils/showSuccessToast";
 
-const initialState = {
+const initialState: FormData = {
   username: "",
   email: "",
   password: "",
@@ -20,31 +19,19 @@ type StrengthLevel = "Weak" | "Fair" | "Good" | "Strong";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState<FormData>(initialState);
   const [errors, setErrors] = useState<FormErrors>(initialState);
+
   const [passwordStrength, setPasswordStrength] =
     useState<StrengthLevel>("Weak");
-
   const [strengthScore, setStrengthScore] = useState(0);
-  // Query
+
   const [registerUser, { isLoading }] = useRegisterUserMutation();
 
   useEffect(() => {
-    if (
-      formData.password &&
-      formData.confirmPassword &&
-      formData.password === formData.confirmPassword
-    ) {
-      setErrors((prev) => {
-        if (!prev.confirmPassword) return prev;
-
-        return { ...prev, confirmPassword: "" };
-      });
-    }
-  }, [formData.password, formData.confirmPassword]);
-
-  useEffect(() => {
     const pwd = formData.password;
+
     let score = 0;
     if (pwd.length >= 8) score++;
     if (/[A-Z]/.test(pwd)) score++;
@@ -54,89 +41,108 @@ const Register: React.FC = () => {
 
     setStrengthScore(score);
 
-    if (pwd.length === 0) {
-      setPasswordStrength("Weak");
-    } else if (score <= 2) {
-      setPasswordStrength("Weak");
-    } else if (score === 3) {
-      setPasswordStrength("Fair");
-    } else if (score === 4) {
-      setPasswordStrength("Good");
-    } else {
-      setPasswordStrength("Strong");
-    }
-  }, [formData.password]);
+    if (pwd.length === 0) setPasswordStrength("Weak");
+    else if (score <= 2) setPasswordStrength("Weak");
+    else if (score === 3) setPasswordStrength("Fair");
+    else if (score === 4) setPasswordStrength("Good");
+    else setPasswordStrength("Strong");
 
-  const validateUsername = (value: string): string => {
+    if (formData.confirmPassword) {
+      setErrors((prev) => {
+        if (formData.confirmPassword === pwd) {
+          if (!prev.confirmPassword) return prev;
+          return { ...prev, confirmPassword: "" };
+        } else {
+          if (prev.confirmPassword === "Passwords do not match") return prev;
+          return { ...prev, confirmPassword: "Passwords do not match" };
+        }
+      });
+    }
+  }, [formData.password, formData.confirmPassword]);
+
+  const validateUsername = useCallback((value: string): string => {
     if (!value.trim()) return "Username is required";
     if (value.length < 3) return "Username must be at least 3 characters";
     return "";
-  };
+  }, []);
 
-  const validateEmail = (value: string): string => {
+  const validateEmail = useCallback((value: string): string => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!value.trim()) return "Email is required";
     if (!emailRegex.test(value)) return "Please enter a valid email address";
     return "";
-  };
+  }, []);
 
-  const validatePassword = (value: string): string => {
+  const validatePassword = useCallback((value: string): string => {
     if (!value) return "Password is required";
     if (value.length < 6) return "Password must be at least 6 characters";
     return "";
-  };
+  }, []);
 
-  const validateConfirm = (
-    confirmValue: string,
-    passwordValue: string,
-  ): string => {
-    if (!confirmValue) return "Please confirm your password";
-    if (confirmValue !== passwordValue) return "Passwords do not match";
-    return "";
-  };
+  const validateConfirm = useCallback(
+    (confirm: string, password: string): string => {
+      if (!confirm) return "Please confirm your password";
+      if (confirm !== password) return "Passwords do not match";
+      return "";
+    },
+    [],
+  );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
 
-  const handleBlur =
+      setFormData((prev) => {
+        if (prev[name as keyof FormData] === value) return prev;
+        return { ...prev, [name]: value };
+      });
+
+      setErrors((prev) => {
+        if (!prev[name as keyof FormErrors]) return prev;
+        return { ...prev, [name]: "" };
+      });
+    },
+    [],
+  );
+
+  const handleBlur = useCallback(
     (field: keyof FormData) => (e: React.FocusEvent<HTMLInputElement>) => {
       const value = formData[field];
       let error = "";
 
-      switch (field) {
-        case "username":
-          error = validateUsername(value);
-          break;
-        case "email":
-          error = validateEmail(value);
-          break;
-        case "password":
-          error = validatePassword(value);
-          if (!error && formData.confirmPassword) {
-            const confirmError = validateConfirm(
-              formData.confirmPassword,
-              value,
-            );
-            if (confirmError) {
-              setErrors((prev) => ({ ...prev, confirmPassword: confirmError }));
-            }
-          }
-          break;
-        case "confirmPassword":
-          error = validateConfirm(value, formData.password);
-          break;
+      if (field === "username") error = validateUsername(value);
+      else if (field === "email") error = validateEmail(value);
+      else if (field === "password") {
+        error = validatePassword(value);
+
+        if (!error && formData.confirmPassword) {
+          const confirmError = validateConfirm(formData.confirmPassword, value);
+
+          setErrors((prev) => {
+            if (prev.confirmPassword === confirmError) return prev;
+            return { ...prev, confirmPassword: confirmError };
+          });
+        }
+      } else if (field === "confirmPassword") {
+        error = validateConfirm(value, formData.password);
       }
 
-      setErrors((prev) => ({ ...prev, [field]: error }));
-    };
+      setErrors((prev) => {
+        if (prev[field] === error) return prev;
+        return { ...prev, [field]: error };
+      });
+    },
+    [
+      formData,
+      validateUsername,
+      validateEmail,
+      validatePassword,
+      validateConfirm,
+    ],
+  );
 
-  const validateAll = (): boolean => {
-    const newErrors = {
+  const validateAll = useCallback((): boolean => {
+    const newErrors: FormErrors = {
       username: validateUsername(formData.username),
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
@@ -145,36 +151,41 @@ const Register: React.FC = () => {
         formData.password,
       ),
     };
+
     setErrors(newErrors);
-    return Object.values(newErrors).every((err) => err === "");
-  };
+
+    return !Object.values(newErrors).some((e) => e);
+  }, [
+    formData,
+    validateUsername,
+    validateEmail,
+    validatePassword,
+    validateConfirm,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (validateAll()) {
-      try {
-        const { ...registerPayload } = formData;
-        const res = await registerUser(registerPayload).unwrap();
-        showSuccessToast(res);
 
-        setFormData(initialState);
-        setErrors(initialState);
-        setPasswordStrength("Weak");
-        setStrengthScore(0);
+    if (!validateAll()) return;
 
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
-      } catch (error) {
-        showErrorToast(error);
-      }
+    try {
+      const res = await registerUser(formData).unwrap();
+      showSuccessToast(res);
+
+      setFormData(initialState);
+      setErrors(initialState);
+      setPasswordStrength("Weak");
+      setStrengthScore(0);
+
+      navigate("/login");
+    } catch (error) {
+      showErrorToast(error);
     }
   };
 
   return (
-    <div className="h-[calc(100vh-70px)] bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
+    <div className="h-[calc(100vh-70px)] bg-linear-to-r from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transition-all duration-300 hover:shadow-xl">
-        {/* Header Section */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-gray-800">
             Join the Blog
@@ -182,69 +193,63 @@ const Register: React.FC = () => {
           <p className="text-gray-500 mt-2">
             Create an account to start writing
           </p>
-          <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
+          <div className="w-16 h-1 bg-linear-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="mb-5">
-            <Input
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              onBlur={handleBlur("username")}
-              error={errors.username}
-              label="Username"
-              required
-              placeholder="john_doe"
-              autoComplete="username"
-            />
-          </div>
-          <div className="mb-5">
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              onBlur={handleBlur("email")}
-              error={errors.email}
-              label="Email Address"
-              required
-              placeholder="hello@example.com"
-              autoComplete="email"
-            />
-          </div>
-          <div className="mb-5">
-            <PasswordInput
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              onBlur={handleBlur("password")}
-              error={errors.password}
-              label="Password"
-              required
-              showStrength
-              strength={passwordStrength}
-              strengthScore={strengthScore}
-            />
-          </div>
+          <Input
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            onBlur={handleBlur("username")}
+            error={errors.username}
+            label="Username"
+            required
+            placeholder="john_doe"
+            autoComplete="username"
+          />
 
-          <div className="mb-6">
-            <PasswordInput
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              onBlur={handleBlur("confirmPassword")}
-              error={errors.confirmPassword}
-              label="Confirm Password"
-              required
-              autoComplete="new-password"
-              showStrength={false}
-            />
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            onBlur={handleBlur("email")}
+            error={errors.email}
+            label="Email Address"
+            required
+            placeholder="hello@example.com"
+            autoComplete="email"
+          />
+
+          <PasswordInput
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            onBlur={handleBlur("password")}
+            error={errors.password}
+            label="Password"
+            required
+            showStrength
+            strength={passwordStrength}
+            strengthScore={strengthScore}
+          />
+
+          <PasswordInput
+            id="confirmPassword"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            onBlur={handleBlur("confirmPassword")}
+            error={errors.confirmPassword}
+            label="Confirm Password"
+            required
+            autoComplete="new-password"
+            showStrength={false}
+          />
 
           <SubmitButton
             isLoading={isLoading}
@@ -252,7 +257,6 @@ const Register: React.FC = () => {
             text="Create Account"
           />
 
-          {/* Login Link */}
           <p className="text-center text-gray-600 mt-6">
             Already have an account?{" "}
             <Link

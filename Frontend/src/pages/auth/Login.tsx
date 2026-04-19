@@ -95,7 +95,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-70px)] bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
+    <div className="h-[calc(100vh-70px)] bg-linear-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transition-all duration-300 hover:shadow-xl">
         {/* Header Section */}
         <div className="text-center mb-8">
@@ -103,7 +103,7 @@ const Login: React.FC = () => {
             Welcome Back
           </h1>
           <p className="text-gray-500 mt-2">Log in to continue to the blog</p>
-          <div className="w-16 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
+          <div className="w-16 h-1 bg-linear-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"></div>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>

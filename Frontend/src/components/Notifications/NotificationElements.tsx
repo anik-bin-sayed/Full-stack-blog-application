@@ -10,6 +10,7 @@ import { showErrorToast } from "../../utils/showErrorToast";
 type NotificationProps = {
   notification: NotificationType;
   onMarkAsRead?: (id: number) => void;
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const getIcon = (type: string) => {
@@ -100,7 +101,7 @@ const NotificationElements: React.FC<NotificationProps> = ({
         !is_read ? "bg-indigo-50/30" : ""
       }`}
     >
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         {avatar ? (
           <img
             src={avatar}
@@ -108,7 +109,7 @@ const NotificationElements: React.FC<NotificationProps> = ({
             className="w-10 h-10 rounded-full object-cover"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold">
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold">
             {displayName.charAt(0).toUpperCase()}
           </div>
         )}
@@ -120,7 +121,7 @@ const NotificationElements: React.FC<NotificationProps> = ({
             <span className="font-semibold">{displayName}</span>{" "}
             <span className="text-gray-600">{getContent(notification)}</span>
           </p>
-          <div className="flex-shrink-0 mt-0.5">
+          <div className="shrink-0 mt-0.5">
             {!is_read && <div className="w-2 h-2 bg-indigo-500 rounded-full" />}
           </div>
         </div>

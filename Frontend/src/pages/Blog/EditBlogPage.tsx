@@ -213,7 +213,7 @@ const EditBlogPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10 px-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl italic text-black">Edit Blog</h1>
@@ -227,7 +227,6 @@ const EditBlogPage: React.FC = () => {
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            {/* Title */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Blog Title
@@ -243,7 +242,6 @@ const EditBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Excerpt */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Short Excerpt
@@ -258,7 +256,6 @@ const EditBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Content */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Blog Content
@@ -274,7 +271,6 @@ const EditBlogPage: React.FC = () => {
               />
             </div>
 
-            {/* Image Upload */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Featured Image
@@ -329,7 +325,7 @@ const EditBlogPage: React.FC = () => {
                       Change Image
                     </button>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/70 to-transparent p-4">
                     <p className="text-white text-sm font-medium truncate">
                       {imageFile?.name || (existingImage && "Current image")}
                     </p>
@@ -416,11 +412,10 @@ const EditBlogPage: React.FC = () => {
               </label>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isUpdating}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-indigo-700 hover:to-purple-700 transition transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUpdating ? "Updating..." : "Update Blog"}
             </button>

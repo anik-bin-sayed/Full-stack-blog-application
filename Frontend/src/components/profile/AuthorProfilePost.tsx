@@ -9,7 +9,7 @@ import {
   FiStar,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { formatDate, getImageUrl } from "../../helper";
+import { formatDate } from "../../helper";
 
 interface Post {
   id: number | string;
@@ -62,7 +62,6 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
   return (
     <div className="space-y-6">
       {authorProfileRecentPost.map((post, idx) => {
-        const postThumbnail = getImageUrl(post?.image);
         return (
           <motion.article
             key={post.id}
@@ -78,11 +77,11 @@ const AuthorProfilePost: React.FC<AuthorProfilePostProps> = ({
               {post.image && (
                 <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto overflow-hidden bg-gray-100 relative">
                   <img
-                    src={postThumbnail}
+                    src={post?.image || ""}
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               )}
 

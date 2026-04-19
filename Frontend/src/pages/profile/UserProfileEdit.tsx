@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+} from "react";
 import {
   FiSave,
   FiX,
@@ -35,11 +42,12 @@ interface ProfileFormData {
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
+  user: {
+    profile?: ProfileFormData;
+  };
   onSuccess?: () => void;
 }
-
-const initialState = {
+const initialState: ProfileFormData = {
   fullname: "",
   bio: "",
   city: "",
@@ -55,6 +63,19 @@ const initialState = {
   portfolio_url: "",
 };
 
+const getChangedFields = (
+  current: ProfileFormData,
+  original: ProfileFormData,
+): Partial<ProfileFormData> => {
+  const changed: Partial<ProfileFormData> = {};
+  (Object.keys(current) as (keyof ProfileFormData)[]).forEach((key) => {
+    if (current[key] !== original[key]) {
+      changed[key] = current[key];
+    }
+  });
+  return changed;
+};
+
 const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   isOpen,
   onClose,
@@ -62,98 +83,142 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   onSuccess,
 }) => {
   const [error, setError] = useState<string | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
   const [formData, setFormData] = useState<ProfileFormData>(initialState);
+  const [originalData, setOriginalData] =
+    useState<ProfileFormData>(initialState);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
-  // Populate form when user data changes
-  useEffect(() => {
-    if (user) {
-      const profile = user.profile || {};
-      setFormData({
-        fullname: profile.fullname || "",
-        bio: profile.bio || "",
-        city: profile.city || "",
-        country: profile.country || "",
-        address: profile.address || "",
-        phone: profile.phone || "",
-        gender: profile.gender || "",
-        language: profile.language || "",
-        twitter: profile.twitter || "",
-        github: profile.github || "",
-        linkedin: profile.linkedin || "",
-        website: profile.website || "",
-        portfolio_url: profile.portfolio_url || "",
-      });
-    }
+  const profileData = useMemo(() => {
+    if (!user?.profile) return null;
 
-    setError(null);
+    const profile = user.profile;
+
+    return {
+      fullname: profile.fullname || "",
+      bio: profile.bio || "",
+      city: profile.city || "",
+      country: profile.country || "",
+      address: profile.address || "",
+      phone: profile.phone || "",
+      gender: profile.gender || "",
+      language: profile.language || "",
+      twitter: profile.twitter || "",
+      github: profile.github || "",
+      linkedin: profile.linkedin || "",
+      website: profile.website || "",
+      portfolio_url: profile.portfolio_url || "",
+    };
   }, [user]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (error) setError(null);
-  };
+  useEffect(() => {
+    if (!profileData) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setFormData(profileData || initialState);
+    setOriginalData(profileData);
     setError(null);
+  }, [profileData]);
 
-    const formDataToSend = new FormData();
+  const bioLength = useMemo(() => formData.bio.length, [formData.bio]);
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value && value.trim() !== "") {
-        formDataToSend.append(key, value);
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (error) setError(null);
+    },
+    [error],
+  );
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
+
+      // Only send changed fields
+      const changed = getChangedFields(formData, originalData);
+      if (Object.keys(changed).length === 0) {
+        showSuccessToast("No changes to save");
+        onClose();
+        return;
       }
-    });
 
-    try {
-      const result = await updateProfile(formDataToSend).unwrap();
-      console.log("Update success:", result);
-      showSuccessToast("Profile updated successfully!");
+      const formDataToSend = new FormData();
+      Object.entries(changed).forEach(([key, value]) => {
+        if (value && value.trim() !== "") {
+          formDataToSend.append(key, value);
+        }
+      });
 
-      if (onSuccess) {
-        onSuccess();
+      try {
+        await updateProfile(formDataToSend).unwrap();
+        showSuccessToast("Profile updated successfully!");
+        onSuccess?.();
+        onClose();
+      } catch (error: unknown) {
+        let errorMessage = "Failed to update profile";
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (
+          typeof error === "object" &&
+          error !== null &&
+          "data" in error
+        ) {
+          const apiError = error as { data?: { message?: string } };
+          errorMessage = apiError.data?.message || errorMessage;
+        }
+
+        showErrorToast(errorMessage);
+        setError(errorMessage);
       }
+    },
+    [formData, originalData, updateProfile, onSuccess, onClose],
+  );
 
-      onClose();
-    } catch (error: any) {
-      console.error("Update failed:", error);
-      const errorMessage =
-        error?.data?.message || error?.message || "Failed to update profile";
-      showErrorToast(errorMessage);
-      setError(errorMessage);
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-  };
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="update__info__modal fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop with blur effect */}
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
-      {/* Modal Panel */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
           ref={modalRef}
           className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scroll-smooth"
         >
-          {/* Header - Fixed sticky */}
           <div className="sticky top-0 z-10 bg-white shadow px-6 py-4 flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold  text-black">Edit Profile</h2>
-              <p className=" text-sm mt-1 text-black">
+              <h2 className="text-2xl font-bold text-black">Edit Profile</h2>
+              <p className="text-sm mt-1 text-black">
                 Update your personal information and social links
               </p>
             </div>
@@ -169,12 +234,11 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                <FiAlertCircle className="flex-shrink-0" />
+                <FiAlertCircle className="shrink-0" />
                 <span className="text-sm">{error}</span>
               </div>
             )}
 
-            {/* Basic Info Grid */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label
@@ -274,7 +338,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               </div>
             </div>
 
-            {/* Gender & Language */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label
@@ -333,11 +396,11 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 rows={14}
                 value={formData.bio}
                 onChange={handleChange}
-                className="w-full h-[400px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
+                className="w-full h-100 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
                 placeholder="Tell us about yourself..."
               />
               <p className="text-xs text-gray-500 mt-1">
-                {formData.bio.length} characters
+                {bioLength} characters
               </p>
             </div>
 
@@ -403,7 +466,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
@@ -438,4 +500,4 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   );
 };
 
-export default ProfileEditModal;
+export default memo(ProfileEditModal);

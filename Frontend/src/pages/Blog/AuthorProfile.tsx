@@ -21,10 +21,8 @@ import {
   FiGrid,
   FiInfo,
   FiUserCheck,
-  FiImage,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
-import Loader from "../../components/Loader";
 import { useAuthorRecentBlogsQuery } from "../../features/blogs/blogApi";
 import AuthorProfilePost from "../../components/profile/AuthorProfilePost";
 import { formatDate, getImageUrl, getLocation } from "../../helper";
@@ -124,7 +122,13 @@ const AuthorProfile: React.FC = () => {
   const imagePathCoverImage = currentCoverImage?.image;
   const coverUrl = getImageUrl(imagePathCoverImage) || defaultCoverImage;
 
-  if (isLoading) return <Loader />;
+  if (isLoading)
+    return (
+      <div className=" flex items-center h-screen justify-center p-8">
+        {" "}
+        <p>Loading...</p>{" "}
+      </div>
+    );
   if (error || !user) return <Error />;
 
   const renderTabContent = () => {

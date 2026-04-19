@@ -1,110 +1,148 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { FiLogOut, FiUser, FiUserCheck } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { useProfilePhotoQuery } from "../../../features/profile/profileApi";
 import { useAppSelector } from "../../../redux/hooks";
 import { useLogoutUserMutation } from "../../../features/auth/authApi";
+import {
+  useGetMeQuery,
+  useProfilePhotoQuery,
+} from "../../../features/profile/profileApi";
 import defaultProfileImage from "../../../assets/default_profile_image.png";
 import { showSuccessToast } from "../../../utils/showSuccessToast";
 import { logout } from "../../../features/auth/authSlice";
 import { useDispatch } from "react-redux";
-import Loader from "../../Loader";
+import { isCacheValid } from "../../../utils/cache/isCacheValid";
+import { setUserCache } from "../../../features/profile/profileSlice";
+import { selectUser } from "../../../features/profile/profileSelectors";
 
 const AuthenticatedButton = () => {
-  const { isAuthenticated, user, isLoading } = useAppSelector(
-    (state) => state.auth,
-  );
+  const cachedUser = useAppSelector((state) => state.profile.user);
+  const cachedAt = useAppSelector((state) => state.profile.cachedAt);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const isCacheReady = cachedUser && cachedAt && isCacheValid(cachedAt);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const dispatch = useDispatch();
+  const [logoutUser] = useLogoutUserMutation();
+
+  const { data: apiUser, isLoading } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  const user = useAppSelector((state) => selectUser(state, apiUser));
 
   const { data: currentProfile } = useProfilePhotoQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const dispatch = useDispatch();
 
-  const [logoutUser] = useLogoutUserMutation();
+  useEffect(() => {
+    if (apiUser && !isCacheReady) {
+      dispatch(setUserCache(apiUser));
+    }
+  }, [apiUser, isCacheReady, dispatch]);
 
   const fullname = user?.profile?.fullname;
   const email = user?.email;
-  const avatarUrl = currentProfile?.image || defaultProfileImage;
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+  const handleClickOutside = useCallback((event: PointerEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsDropdownOpen(false);
+    }
   }, []);
 
-  const handleLogout = async () => {
-    if (window.confirm("Are you sure you want to logging out?")) {
-      try {
-        const res = await logoutUser().unwrap();
-        dispatch(logout());
-        showSuccessToast(res);
-      } catch (error) {
-        console.error("Logout failed:", error);
-      }
-    }
-  };
+  useEffect(() => {
+    document.addEventListener("pointerdown", handleClickOutside);
+    return () =>
+      document.removeEventListener("pointerdown", handleClickOutside);
+  }, [handleClickOutside]);
 
-  if (isLoading) return <Loader />;
+  const handleLogout = useCallback(async () => {
+    if (!window.confirm("Are you sure you want to logout?")) return;
+
+    try {
+      const res = await logoutUser().unwrap();
+      dispatch(logout());
+      showSuccessToast(res);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }, [logoutUser, dispatch]);
+
+  const toggleDropdown = useCallback(() => {
+    setIsDropdownOpen((prev) => !prev);
+  }, []);
+
+  if (isLoading) {
+    return <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />;
+  }
+
   return (
     <div ref={dropdownRef} className="relative">
       <button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 focus:outline-none group cursor-pointer outline outline-black/20 hover:bg-black/5 px-2 py-2 rounded-md"
+        onClick={toggleDropdown}
+        className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-black/5 transition border border-gray-200 cursor-pointer"
         aria-label="User menu"
       >
-        <div className="w-9 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md">
-          <img
-            src={avatarUrl}
-            alt={fullname}
-            className="w-9 h-9 rounded-full object-cover"
-          />
-        </div>
+        <img
+          src={currentProfile?.image || defaultProfileImage}
+          alt={fullname || "User"}
+          loading="lazy"
+          decoding="async"
+          className="w-9 h-9 rounded-full object-cover"
+        />
+
         <div className="text-left hidden lg:block">
           <div className="text-sm font-medium text-gray-800">{fullname}</div>
           <div className="text-xs text-gray-500">{email}</div>
         </div>
+
         <FiUserCheck className="text-gray-400 w-4 h-4 lg:hidden" />
       </button>
-      {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-10 animate-fadeIn">
-          <Link
-            to="/profile"
-            onClick={() => setIsDropdownOpen(false)}
-            className="flex items-center px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition"
-          >
-            <FiUser className="mr-2" /> Profile
-          </Link>
-          <Link
-            to="/blogs/create"
-            onClick={() => setIsDropdownOpen(false)}
-            className="flex items-center px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition"
-          >
-            <FiUser className="mr-2" /> Create a Blog
-          </Link>
-          <Link
-            to="/my-blogs"
-            onClick={() => setIsDropdownOpen(false)}
-            className="flex items-center px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 transition"
-          >
-            <FiUser className="mr-2" /> My Blogs
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition cursor-pointer"
-          >
-            <FiLogOut className="mr-2" /> Logout
-          </button>
-        </div>
-      )}
+
+      <div
+        className={`absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-10 transition-all duration-150 ${
+          isDropdownOpen
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 pointer-events-none"
+        }`}
+        style={{ willChange: "transform" }}
+      >
+        <Link
+          to="/profile"
+          onClick={toggleDropdown}
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <FiUser className="mr-2" /> Profile
+        </Link>
+
+        <Link
+          to="/blogs/create"
+          onClick={toggleDropdown}
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <FiUser className="mr-2" /> Create Blog
+        </Link>
+
+        <Link
+          to="/my-blogs"
+          onClick={toggleDropdown}
+          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <FiUser className="mr-2" /> My Blogs
+        </Link>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <FiLogOut className="mr-2" /> Logout
+        </button>
+      </div>
     </div>
   );
 };
